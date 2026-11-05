@@ -1,5 +1,7 @@
 *.js
 !jest.config.js
+# CloudFront Functions source (plain JS, not tsc output)
+!lib/constructs/ip-allowlist/viewer-request.js
 *.d.ts
 node_modules
 
