@@ -24,6 +24,11 @@ const props = {
   budgetEmail: app.node.tryGetContext('budgetEmail') as string | undefined,
   /** Monthly budget in USD for the alert. */
   budgetUsd: Number(app.node.tryGetContext('budgetUsd') ?? 20),
+  /**
+   * Pre-event IP allowlist. On unless `-c ipRestriction=false`. Manage the list with
+   * `scripts/allow-ip.sh` (blocked for everyone until it is first run).
+   */
+  ipRestriction: String(app.node.tryGetContext('ipRestriction') ?? 'true') !== 'false',
 };
 
 const virginia = new UsEast1Stack(app, 'CdkLoverUsEast1Stack', {
@@ -39,6 +44,7 @@ new MainStack(app, 'CdkLoverStack', {
   summaryModelId: props.summaryModelId,
   budgetEmail: props.budgetEmail,
   budgetUsd: props.budgetUsd,
+  ipRestriction: props.ipRestriction,
 });
 
 cdk.Tags.of(app).add('Application', 'CdkLover');

@@ -5,6 +5,7 @@ import {
   AllowedMethods,
   CachePolicy,
   Distribution,
+  type FunctionAssociation,
   GeoRestriction,
   LambdaEdgeEventType,
   OriginRequestPolicy,
@@ -72,6 +73,18 @@ export interface CloudFrontLambdaFunctionUrlServiceProps {
    * @default No geographic restriction.
    */
   geoRestriction?: GeoRestriction;
+
+  /**
+   * CloudFront Functions run on every behavior (e.g. an IP allowlist).
+   *
+   * @default none
+   */
+  functionAssociations?: FunctionAssociation[];
+
+  /**
+   * @default true
+   */
+  enableIpv6?: boolean;
 }
 
 export class CloudFrontLambdaFunctionUrlService extends Construct {
@@ -91,6 +104,8 @@ export class CloudFrontLambdaFunctionUrlService extends Construct {
       signPayloadHandler,
       webAclId,
       geoRestriction,
+      functionAssociations,
+      enableIpv6,
     } = props;
     let domainName = '';
     if (hostedZone) {
@@ -140,6 +155,7 @@ export class CloudFrontLambdaFunctionUrlService extends Construct {
         allowedMethods: AllowedMethods.ALLOW_ALL,
         originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
         edgeLambdas,
+        functionAssociations,
       },
       additionalBehaviors: {
         '/_next/static/*': {
@@ -148,6 +164,7 @@ export class CloudFrontLambdaFunctionUrlService extends Construct {
           allowedMethods: AllowedMethods.ALLOW_GET_HEAD,
           originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
           edgeLambdas,
+          functionAssociations,
         },
       },
       // errorResponses: [{ httpStatus: 404, responsePagePath: '/', responseHttpStatus: 200 }],
@@ -161,6 +178,7 @@ export class CloudFrontLambdaFunctionUrlService extends Construct {
       ...(geoRestriction ? { geoRestriction } : {}),
 
       minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2021,
+      enableIpv6,
     });
 
     // Starting October 2025, new function URLs require both lambda:InvokeFunctionUrl
