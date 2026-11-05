@@ -18,6 +18,20 @@ const nextConfig: NextConfig = {
       allowedOrigins,
     },
   },
+  // Nothing here is meant to be framed (clickjacking on the admin page) or MIME-sniffed.
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+    ];
+  },
   typescript: {
     ignoreBuildErrors: process.env.SKIP_TS_BUILD === 'true',
   },

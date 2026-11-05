@@ -14,6 +14,9 @@ import { ContainerImageBuild } from '@cdklabs/deploy-time-build';
 import { join } from 'path';
 import { EventBus } from './event-bus/';
 
+/** `us.amazon.nova-lite-v1:0` (inference profile) → `amazon.nova-lite-v1:0` (foundation model). */
+const foundationModel = (modelId: string) => modelId.replace(/^(us|eu|apac|global)\./, '');
+
 export interface WebappProps {
   database: Database;
   signPayloadHandler: EdgeFunction;
@@ -74,15 +77,18 @@ export class Webapp extends Construct {
     eventBus.api.grantPublish(handler);
     props.signingKey.grantRead(handler);
     props.adminPassword.grantRead(handler);
-    // Cross-region inference profiles (us.*) route to foundation models in any US region,
-    // so the foundation-model resource cannot be pinned to this stack's region.
+    // Only the two configured models. A cross-region inference profile (us.*) routes to the
+    // foundation model in any US region, so the foundation-model ARN keeps a region wildcard.
+    const modelIds = [...new Set([props.translateModelId, props.summaryModelId])];
     handler.addToRolePolicy(
       new PolicyStatement({
-        actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
-        resources: [
-          'arn:aws:bedrock:*::foundation-model/*',
-          stack.formatArn({ service: 'bedrock', resource: 'inference-profile', resourceName: '*' }),
-        ],
+        actions: ['bedrock:InvokeModel'],
+        resources: modelIds.flatMap((modelId) => [
+          `arn:${stack.partition}:bedrock:*::foundation-model/${foundationModel(modelId)}`,
+          ...(modelId === foundationModel(modelId)
+            ? []
+            : [stack.formatArn({ service: 'bedrock', resource: 'inference-profile', resourceName: modelId })]),
+        ]),
       }),
     );
 

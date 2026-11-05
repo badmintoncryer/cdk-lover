@@ -47,11 +47,15 @@ describe('CDK Lover stack', () => {
   test('webapp can call Bedrock and gets the model ids', () => {
     template.hasResourceProperties('AWS::IAM::Policy', {
       PolicyDocument: {
-        Statement: Match.arrayWith([
-          Match.objectLike({ Action: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'] }),
-        ]),
+        Statement: Match.arrayWith([Match.objectLike({ Action: 'bedrock:InvokeModel' })]),
       },
     });
+    const json = JSON.stringify(template.toJSON());
+    // Scoped to the configured Nova models, never every foundation model in the account.
+    expect(json).not.toContain('foundation-model/*');
+    expect(json).toContain('::foundation-model/amazon.nova-lite-v1:0');
+    expect(json).toContain('::foundation-model/amazon.nova-pro-v1:0');
+    expect(json).toContain(':inference-profile/us.amazon.nova-lite-v1:0');
     template.hasResourceProperties('AWS::Lambda::Function', {
       Environment: {
         Variables: Match.objectLike({
