@@ -389,10 +389,7 @@
       "compositePrimaryKeys": {
         "Vote_opinionId_voterKey_pk": {
           "name": "Vote_opinionId_voterKey_pk",
-          "columns": [
-            "opinionId",
-            "voterKey"
-          ]
+          "columns": ["opinionId", "voterKey"]
         }
       },
       "uniqueConstraints": {},
