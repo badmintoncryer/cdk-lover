@@ -10,3 +10,4 @@ cdk.out
 # Ignoring this file only because it is an OSS sample solution.
 # It is generally recommended to store the cdk.context.json in git.
 cdk.context.json
+!types/*.d.ts
