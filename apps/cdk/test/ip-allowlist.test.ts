@@ -14,6 +14,12 @@ const src = readFileSync(join(__dirname, '../lib/constructs/ip-allowlist/viewer-
 const matches = new Function(`${src}; return matches;`)() as (ip: string, entry: string) => boolean;
 
 describe('IP allowlist matcher', () => {
+  // Tests run on Node, which accepts syntax the CloudFront runtime rejects at deploy time.
+  test('avoids syntax cloudfront-js-2.0 does not support', () => {
+    expect(src).not.toMatch(/(const|let|var)\s*[[{]/);
+    expect(src).not.toMatch(/\.\.\./);
+  });
+
   test.each([
     ['203.0.113.7', '203.0.113.7', true],
     ['203.0.113.8', '203.0.113.7', false],

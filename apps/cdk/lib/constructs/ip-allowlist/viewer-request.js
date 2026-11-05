@@ -19,7 +19,10 @@ function toInt(ip) {
 }
 
 export function matches(ip, entry) {
-  const [base, bitsText] = entry.trim().split('/');
+  // No destructuring: cloudfront-js-2.0 rejects it ("Token not supported in this version").
+  const parts = entry.trim().split('/');
+  const base = parts[0];
+  const bitsText = parts[1];
   const addr = toInt(ip);
   const net = toInt(base);
   if (addr === null || net === null) return false;
