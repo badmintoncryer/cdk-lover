@@ -1,4 +1,5 @@
 {
+  "name": "cdk-lover",
   "private": true,
   "scripts": {
     "prepare": "simple-git-hooks"
@@ -30,6 +31,5 @@
       "sharp",
       "unrs-resolver"
     ]
-  },
-  "name": "cdk-lover"
+  }
 }
