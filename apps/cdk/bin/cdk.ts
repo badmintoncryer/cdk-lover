@@ -13,7 +13,9 @@ const app = new cdk.App();
  */
 const props = {
   account: process.env.CDK_DEFAULT_ACCOUNT!,
-  region: process.env.CDK_DEFAULT_REGION ?? 'us-west-2',
+  // Pinned: the CLI sets CDK_DEFAULT_REGION from the AWS profile, which silently moved the stack
+  // to the profile's region. Override with `-c region=...` if needed.
+  region: (app.node.tryGetContext('region') as string | undefined) ?? 'us-west-2',
   /** Bedrock model (or inference profile) used to translate posts. */
   translateModelId: app.node.tryGetContext('translateModelId') ?? 'us.amazon.nova-lite-v1:0',
   /** Bedrock model (or inference profile) used to summarize all opinions. */

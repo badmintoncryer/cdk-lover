@@ -40,7 +40,7 @@ AWS re:Invent のコミュニティセッション「CDK Lover」専用の Web �
 pnpm install
 cd apps/cdk
 # 予算アラートを付ける場合は -c budgetEmail=you@example.com（任意）
-CDK_DEFAULT_REGION=us-west-2 pnpm exec cdk deploy --all
+pnpm exec cdk deploy --all   # メインのスタックは us-west-2 固定（変えるなら -c region=...）
 ```
 
 出力の `FrontendDomainName` がサイトの URL、`AdminPasswordCommand` が管理者パスワードを取り出すコマンドです。
