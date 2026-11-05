@@ -19,8 +19,7 @@ function getDistributionConfig(template: Template) {
   return Object.values(distributions)[0].Properties.DistributionConfig as Record<string, unknown>;
 }
 
-// Mirrors bin/cdk.ts: the us-east-1 stack always provisions the CLOUDFRONT Web ACL, and its ARN
-// is passed to the main stack so the distribution is enrolled in the flat-rate pricing plan.
+// Mirrors bin/cdk.ts (no WAF Web ACL: pay-as-you-go CloudFront).
 function synth() {
   const app = new cdk.App();
   const virginia = new UsEast1Stack(app, 'UsEast1Stack', {
@@ -31,7 +30,6 @@ function synth() {
     env: { account, region: 'us-west-2' },
     crossRegionReferences: true,
     signPayloadHandler: virginia.signPayloadHandler,
-    webAclId: virginia.webAclArn,
   });
   return { virginia: Template.fromStack(virginia), main: Template.fromStack(mainStack) };
 }
@@ -60,29 +58,9 @@ describe('CloudFront flat-rate plan compatibility (issue #187)', () => {
     expect(1 + additional).toBeLessThanOrEqual(5);
   });
 
-  test('the distribution is associated with the Web ACL', () => {
-    const { main } = synth();
-    expect(getDistributionConfig(main).WebACLId).toBeDefined();
-  });
-});
-
-describe('us-east-1 WAF Web ACL for the flat-rate plan (issue #187)', () => {
-  test('is a Free-plan-compliant CLOUDFRONT-scoped Web ACL without false-positive-prone rules', () => {
-    const { virginia } = synth();
-
-    virginia.resourceCountIs('AWS::WAFv2::WebACL', 1);
-    virginia.hasResourceProperties('AWS::WAFv2::WebACL', { Scope: 'CLOUDFRONT' });
-
-    const webAcls = virginia.findResources('AWS::WAFv2::WebACL');
-    const rules = Object.values(webAcls)[0].Properties.Rules as Array<Record<string, unknown>>;
-    // Free plan allows at most 5 rules.
-    expect(rules.length).toBeLessThanOrEqual(5);
-
-    const serialized = JSON.stringify(rules);
-    // No rules that cause hard-to-diagnose false positives:
-    expect(serialized).not.toContain('rateBasedStatement'); // rate limiting
-    expect(serialized).not.toContain('AmazonIpReputationList'); // IP-reputation blocking
-    expect(serialized).not.toContain('AnonymousIpList'); // blocks Free-plan subscription
-    expect(serialized).not.toContain('CommonRuleSet'); // cookie-size / no-user-agent false positives
+  test('no WAF: the distribution has no Web ACL (idle cost; not needed for a one-off event site)', () => {
+    const { main, virginia } = synth();
+    expect(getDistributionConfig(main).WebACLId).toBeUndefined();
+    expect(Object.keys(virginia.findResources('AWS::WAFv2::WebACL'))).toHaveLength(0);
   });
 });

@@ -14,7 +14,6 @@ function synth(budgetEmail?: string) {
     env: { account: '123456789012', region: 'us-west-2' },
     crossRegionReferences: true,
     signPayloadHandler: virginia.signPayloadHandler,
-    webAclId: virginia.webAclArn,
     budgetEmail,
   });
   return Template.fromStack(main);

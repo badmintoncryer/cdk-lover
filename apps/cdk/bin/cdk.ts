@@ -33,7 +33,6 @@ new MainStack(app, 'CdkLoverStack', {
   env: { account: props.account, region: props.region },
   crossRegionReferences: true,
   signPayloadHandler: virginia.signPayloadHandler,
-  webAclId: virginia.webAclArn,
   translateModelId: props.translateModelId,
   summaryModelId: props.summaryModelId,
   budgetEmail: props.budgetEmail,

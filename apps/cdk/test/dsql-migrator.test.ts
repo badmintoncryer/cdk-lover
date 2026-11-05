@@ -26,7 +26,6 @@ function synthMain(): Template {
     env: { account: '123456789012', region: 'us-west-2' },
     crossRegionReferences: true,
     signPayloadHandler: virginia.signPayloadHandler,
-    webAclId: virginia.webAclArn,
   });
   app.synth();
   return Template.fromStack(main);

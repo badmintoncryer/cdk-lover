@@ -23,14 +23,14 @@ AWS re:Invent のコミュニティセッション「CDK Lover」専用の Web �
 - AppSync Events: ブラウザは API キーで購読のみ、発行は Lambda から IAM で。会場 Wi-Fi が切れても 10 秒ごとのポーリングで追いつきます
 - Amazon Bedrock: 翻訳 `us.amazon.nova-lite-v1:0`、まとめ `us.amazon.nova-pro-v1:0`（デプロイ時に変更可）
 - Secrets Manager: 管理者パスワードと署名鍵（デプロイ時に自動生成）
-- WAF（CloudFront 定額 Free プラン用）。全員が同じ会場 IP から来るので、IP レート制限ルールは入れていません
+- WAF は付けていません（一時的なイベントサイトでアイドルコストを避けるため）。CloudFront は従量課金です
 
 ## synth 時のチェック
 
 `cdk synth` / `cdk deploy` のたびに次の 2 つが走ります（`apps/cdk/bin/cdk.ts`）。
 
 - [cdk-preflight](https://github.com/badmintoncryer/cdk-preflight): デプロイ途中で失敗すると分かっているテンプレートを synth の時点で止めます。
-- [cfn-idle-cost](https://github.com/badmintoncryer/cfn-idle-cost): アクセスゼロでもかかる月額（アイドルコスト）を表示し、`budgetUsd`（既定 $20）を超えたら synth を失敗させます。1 ドル/月以上のリソースは警告として出ます。現状は約 $6.80/月で、ほぼ WAF です（CloudFront を Free プランに切り替えれば WAF 分はかかりません）。
+- [cfn-idle-cost](https://github.com/badmintoncryer/cfn-idle-cost): アクセスゼロでもかかる月額（アイドルコスト）を表示し、`budgetUsd`（既定 $20）を超えたら synth を失敗させます。1 ドル/月以上のリソースは警告として出ます。WAF は付けていないので、現状のアイドルコストは Secrets Manager の 2 本分（約 $0.80/月）だけです。
 
 ## デプロイ
 
@@ -54,7 +54,6 @@ pnpm exec cdk deploy --all -c translateModelId=<model or inference profile id> -
 デプロイ後に一度だけやること:
 
 1. Bedrock コンソールで、使うモデルが呼び出せる状態か確認する（Nova はアカウントで有効化済みなら追加作業なし）。
-2. （任意）CloudFront コンソールでディストリビューションを開き、**Manage subscription → Free plan** に切り替える。切り替えないと WAF が従量課金（月 $5 程度）になります。
 
 ## 当日の手順
 
