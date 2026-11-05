@@ -3,8 +3,12 @@ import { CATEGORIES } from './i18n';
 
 const LABEL: Record<string, string> = { good: 'What people love', bad: 'Pain points', wish: 'Wishes', other: 'Other' };
 
-function csvCell(v: string | number): string {
-  const s = String(v);
+/** Cells starting with these are run as formulas by Excel / Sheets (CSV injection). */
+const FORMULA_START = /^[=+\-@\t\r]/;
+
+export function csvCell(v: string | number): string {
+  const raw = String(v);
+  const s = typeof v === 'string' && FORMULA_START.test(raw) ? `'${raw}` : raw;
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 

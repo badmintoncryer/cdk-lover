@@ -12,6 +12,12 @@ export const sessions = pgTable('Session', {
   summaryEn: text('summaryEn'),
   summaryJa: text('summaryJa'),
   summaryCount: integer('summaryCount').notNull().default(0),
+  /**
+   * Translation model calls spent on this session (posts + edits). A session-wide cap, because the
+   * per-browser cap alone is bypassed by dropping the anonymous id cookie. Null means 0 (DSQL
+   * cannot ADD COLUMN with a DEFAULT).
+   */
+  translateCount: integer('translateCount'),
   summarizedAt: timestamp('summarizedAt', { withTimezone: true }),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
 });

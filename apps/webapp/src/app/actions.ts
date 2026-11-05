@@ -5,18 +5,31 @@ import { opinions, profiles, votes } from '@repo/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { translate } from '@/lib/ai';
+import { translate, untranslated } from '@/lib/ai';
 import { passphraseHash, purposeKey, safeEqual } from '@/lib/crypto';
-import { countOpinionsBy, getSession, listGroups } from '@/lib/data';
+import { countOpinionsBy, countOpinionsInSession, getSession, listGroups, reserveTranslation } from '@/lib/data';
 import { notifySession } from '@/lib/events';
 import { CATEGORIES, isLang } from '@/lib/i18n';
 import { ensureParticipantId, isJoined, setGroupId, setJoined, setLangCookie } from '@/lib/identity';
 import { normalizeProfileUrl } from '@/lib/profile';
 import { getSigningKey } from '@/lib/secrets';
 
-/** Cost guard: every note costs one translation call. */
+/**
+ * Cost guards. The per-person cap is only a courtesy limit: a browser can drop its anonymous id
+ * cookie to get a fresh one. The session-wide caps are the real bound on AI spend and DB rows.
+ */
 const MAX_OPINIONS_PER_PERSON = 60;
+const MAX_OPINIONS_PER_SESSION = Number(process.env.MAX_OPINIONS_PER_SESSION) || 1500;
+/** Translation calls per session, posts and edits together (Nova Lite: roughly $0.0003 each). */
+const MAX_TRANSLATIONS_PER_SESSION = Number(process.env.MAX_TRANSLATIONS_PER_SESSION) || 3000;
 const MAX_BODY = 400;
+
+/** Translates only while the session still has budget; otherwise the post is kept as written. */
+async function translateWithinBudget(sessionId: string, body: string) {
+  if (await reserveTranslation(sessionId, MAX_TRANSLATIONS_PER_SESSION)) return translate(body);
+  console.warn(JSON.stringify({ msg: 'translation budget exhausted', sessionId }));
+  return untranslated(body);
+}
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -98,7 +111,8 @@ export async function createOpinion(input: z.infer<typeof opinionSchema>): Promi
     const { authorKey } = await requireJoined(sessionId);
     if (!(await listGroups(sessionId)).some((g) => g.id === groupId)) return fail('invalid');
     if ((await countOpinionsBy(sessionId, authorKey)) >= MAX_OPINIONS_PER_PERSON) throw new Error('limit');
-    const tr = await translate(body);
+    if ((await countOpinionsInSession(sessionId)) >= MAX_OPINIONS_PER_SESSION) throw new Error('limit');
+    const tr = await translateWithinBudget(sessionId, body);
     await db.insert(opinions).values({
       sessionId,
       groupId,
@@ -136,7 +150,7 @@ export async function updateOpinion(input: z.infer<typeof updateSchema>): Promis
     const tr =
       existing.body === body
         ? { sourceLang: existing.sourceLang, en: existing.bodyEn, ja: existing.bodyJa }
-        : await translate(body);
+        : await translateWithinBudget(sessionId, body);
     await db
       .update(opinions)
       .set({ category, body, sourceLang: tr.sourceLang, bodyEn: tr.en, bodyJa: tr.ja })

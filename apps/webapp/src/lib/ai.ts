@@ -39,17 +39,23 @@ Rules:
 - If the note is in neither language, still provide both translations.
 Reply with JSON only, no prose: {"sourceLang":"<ISO 639-1 code of the note>","en":"<English>","ja":"<Japanese>"}`;
 
+/** The post shown as written in both languages (no model call). */
+export function untranslated(text: string): Translation {
+  return { sourceLang: guessLang(text), en: text, ja: text };
+}
+
 /**
  * Translates a post into both languages. Never throws: on any model error the original text is
  * shown in both languages so a post is never lost because of the AI.
  */
 export async function translate(text: string): Promise<Translation> {
-  const fallbackLang = guessLang(text);
-  const fallback = { sourceLang: fallbackLang, en: text, ja: text };
+  const fallback = untranslated(text);
+  const fallbackLang = fallback.sourceLang;
   const modelId = process.env.TRANSLATE_MODEL_ID;
   if (!modelId) return fallback;
   try {
-    const out = await converse(modelId, TRANSLATE_SYSTEM, text, 1200);
+    // 400 chars of input needs far fewer output tokens; a low cap bounds "repeat this" prompt abuse.
+    const out = await converse(modelId, TRANSLATE_SYSTEM, text, 800);
     const parsed = extractJson(out) as Partial<Translation>;
     const sourceLang = typeof parsed.sourceLang === 'string' ? parsed.sourceLang.slice(0, 8) : fallbackLang;
     return {

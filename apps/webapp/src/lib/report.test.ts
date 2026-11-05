@@ -24,6 +24,13 @@ describe('report', () => {
     expect(csv).toContain('"a,""b""\nc"');
   });
 
+  test('csv neutralizes cells Excel would run as formulas', () => {
+    const csv = toCsv([o({ body: '=HYPERLINK("https://evil.example","x")', bodyEn: '+1', bodyJa: '@SUM(A1)' })]);
+    expect(csv).toContain(`"'=HYPERLINK(""https://evil.example"",""x"")"`);
+    expect(csv).toContain(",'+1,'@SUM(A1),");
+    expect(toCsv([o({ body: 'plain' })])).toContain(',plain,');
+  });
+
   test('markdown sorts by votes within a category', () => {
     const session = { title: 'Nov 30', summaryEn: null, summaryJa: null } as SessionRow;
     const md = toMarkdown(

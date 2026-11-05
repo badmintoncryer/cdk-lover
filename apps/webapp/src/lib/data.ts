@@ -1,6 +1,6 @@
 import { db } from '@repo/db/client';
 import { groups, opinions, profiles, sessions, votes } from '@repo/db/schema';
-import { and, asc, count, desc, eq } from 'drizzle-orm';
+import { and, asc, count, desc, eq, sql } from 'drizzle-orm';
 
 export type SessionRow = typeof sessions.$inferSelect;
 export type GroupRow = typeof groups.$inferSelect;
@@ -92,4 +92,38 @@ export async function listProfiles(sessionId: string, ownerKey?: string): Promis
     ...p,
     mine: !!ownerKey && k === ownerKey,
   }));
+}
+
+export async function countOpinionsInSession(sessionId: string): Promise<number> {
+  const [r] = await db.select({ n: count() }).from(opinions).where(eq(opinions.sessionId, sessionId));
+  return Number(r?.n ?? 0);
+}
+
+/** DSQL reports optimistic-concurrency conflicts as SQLSTATE 40001; drizzle may wrap the pg error. */
+function isConflict(e: unknown): boolean {
+  const err = e as { code?: string; cause?: { code?: string } } | undefined;
+  return err?.code === '40001' || err?.cause?.code === '40001';
+}
+
+/**
+ * Atomically takes one translation from the session's budget. Returns false once `max` calls were
+ * spent, so the caller saves the post untranslated instead of calling the model. The counter only
+ * grows: deleting a note does not give the call back.
+ */
+export async function reserveTranslation(sessionId: string, max: number): Promise<boolean> {
+  const used = sql`coalesce(${sessions.translateCount}, 0)`;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const rows = await db
+        .update(sessions)
+        .set({ translateCount: sql`${used} + 1` })
+        .where(and(eq(sessions.id, sessionId), sql`${used} < ${max}`))
+        .returning({ id: sessions.id });
+      return rows.length > 0;
+    } catch (e) {
+      // Concurrent posts update the same Session row; retry a few times with jitter.
+      if (!isConflict(e) || attempt >= 4) throw e;
+      await new Promise((r) => setTimeout(r, 20 + Math.random() * 80 * (attempt + 1)));
+    }
+  }
 }

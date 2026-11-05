@@ -75,7 +75,8 @@ export async function isAdmin(): Promise<boolean> {
 }
 
 export async function setAdminCookie(token: string) {
-  (await cookies()).set(ADMIN, token, { ...baseCookie, maxAge: 60 * 60 * 12 });
+  // Strict: the admin cookie is never sent on a request started from another site.
+  (await cookies()).set(ADMIN, token, { ...baseCookie, sameSite: 'strict', maxAge: 60 * 60 * 12 });
 }
 
 export async function clearAdminCookie() {
