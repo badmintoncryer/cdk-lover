@@ -1,2 +1,89 @@
-# cdk-lover
-Session-only web platform for the CDK Lover community session at re:Invent
+# CDK Lover 💜
+
+AWS re:Invent のコミュニティセッション「CDK Lover」専用の Web サイトです。参加者が CDK の「好き / つらい / こうしてほしい」を付箋のように投稿し、全グループの意見をひとつのボードで共有して、最後に CDK チームへスクリーンで直接フィードバックします。
+
+[aws-samples/serverless-full-stack-webapp-starter-kit](https://github.com/aws-samples/serverless-full-stack-webapp-starter-kit) をベースにしています（MIT-0）。
+
+## できること
+
+| 画面       | URL              | 内容                                                                                                                                     |
+| ---------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| ボード     | `/s/<id>`        | 付箋の投稿・+1・編集/削除。全グループ / 自分のグループ / カテゴリで絞り込み。日本語↔英語の自動翻訳と原文切り替え。閲覧はパスフレーズ不要 |
+| 参加者     | `/s/<id>/people` | 名前・ひとこと・LinkedIn / X / GitHub のカード一覧（回ごと）                                                                             |
+| スクリーン | `/s/<id>/screen` | 投影用。カテゴリ別・+1 順、参加用 QR、AI まとめ。`?lang=ja` で日本語表示                                                                 |
+| 管理       | `/admin`         | 回の作成、パスフレーズ設定、受付の開始/終了、グループ作成、AI まとめ実行、レポート出力（Markdown / CSV）、削除                           |
+
+- 意見は匿名で表示します。ブラウザごとのランダム ID のハッシュだけを保存し、用途（意見 / +1 / プロフィール）ごとに salt を変えているので、意見とプロフィールは紐づきません。
+- 書き込み（投稿・+1・プロフィール）はその回のパスフレーズを入れたブラウザだけが行えます。AI 処理はすべて書き込み経由なので、パスフレーズが AI コストの防波堤になります。加えて 1 人あたり投稿 60 件、本文 400 文字、AI まとめは各回 20 回までの上限があります。
+
+## 構成
+
+- Next.js (App Router) on Lambda（Lambda Web Adapter）+ CloudFront（OAC + 署名用 Lambda@Edge）
+- Aurora DSQL + Drizzle ORM（`cdk destroy` で削除されるよう `RemovalPolicy.DESTROY`）
+- AppSync Events: ブラウザは API キーで購読のみ、発行は Lambda から IAM で。会場 Wi-Fi が切れても 10 秒ごとのポーリングで追いつきます
+- Amazon Bedrock: 翻訳 `us.amazon.nova-lite-v1:0`、まとめ `us.amazon.nova-pro-v1:0`（デプロイ時に変更可）
+- Secrets Manager: 管理者パスワードと署名鍵（デプロイ時に自動生成）
+- WAF（CloudFront 定額 Free プラン用）。全員が同じ会場 IP から来るので、IP レート制限ルールは入れていません
+
+## デプロイ
+
+前提: Node.js 22+、pnpm 10、AWS CLI の認証、デプロイ先アカウントで `cdk bootstrap` 済み（us-east-1 と us-west-2 の両方）。
+
+```bash
+pnpm install
+cd apps/cdk
+# 予算アラートを付ける場合は -c budgetEmail=you@example.com（任意）
+CDK_DEFAULT_REGION=us-west-2 pnpm exec cdk deploy --all
+```
+
+出力の `FrontendDomainName` がサイトの URL、`AdminPasswordCommand` が管理者パスワードを取り出すコマンドです。
+
+モデルを変える場合:
+
+```bash
+pnpm exec cdk deploy --all -c translateModelId=<model or inference profile id> -c summaryModelId=<id>
+```
+
+デプロイ後に一度だけやること:
+
+1. Bedrock コンソールで、使うモデルが呼び出せる状態か確認する（Nova はアカウントで有効化済みなら追加作業なし）。
+2. （任意）CloudFront コンソールでディストリビューションを開き、**Manage subscription → Free plan** に切り替える。切り替えないと WAF が従量課金（月 $5 程度）になります。
+
+## 当日の手順
+
+1. `/admin` にログインし、回を作る（例: ID `1130`、パスフレーズ、受付 open）。
+2. グループを作る（例: `JP-1` ja、`JP-2` ja、`EN-1` en）。
+3. スクリーンに `/s/1130/screen` を映す。QR から参加し、口頭でパスフレーズを伝える。
+4. ディスカッション中はボードに投稿してもらう。スクリーンでグループ別・言語別に切り替えられます。
+5. 最後に管理画面で「Generate summary」→ スクリーンの「AI summary」タブを CDK チームに見せる。
+6. 終わったら受付を closed にし、「Download report (.md)」でレポートを保存。
+
+パスフレーズを変えると、その回に参加済みのブラウザは再入力が必要になります（漏れたときの対処に使えます）。
+
+## 撤去
+
+```bash
+cd apps/cdk
+pnpm exec cdk destroy --all
+```
+
+DSQL クラスタ、シークレット、ログ、S3 バケットまで消えます。例外として、CloudFront の仕様上 Lambda@Edge の関数バージョンは数時間後に手動削除が必要です（us-east-1 の Lambda コンソールで名前に `SignPayloadHandler` を含む関数を削除）。データだけ先に消したいときは、管理画面の「Delete everything」で回ごとに削除できます。
+
+## ローカル開発
+
+```bash
+cp apps/webapp/.env.local.example apps/webapp/.env.local
+# DSQL の代わりに素の PostgreSQL も使えます: DATABASE_URL=postgres://...
+# （その場合 migrations/*.sql の "INDEX ASYNC" を "INDEX" にして流してください）
+cd apps/webapp && pnpm run dev
+```
+
+`TRANSLATE_MODEL_ID` が未設定、または Bedrock 呼び出しに失敗した場合は、原文をそのまま両言語に表示します（投稿は失われません）。
+
+## テスト
+
+```bash
+pnpm -r run check:ci
+pnpm -r run test:unit
+cd apps/webapp && pnpm run build
+```

@@ -1,0 +1,181 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
+import {
+  addGroup,
+  adminDeleteOpinion,
+  adminDeleteProfile,
+  clearSummary,
+  deleteGroup,
+  deleteSessionData,
+  runSummary,
+  type AdminResult,
+} from '@/app/admin/actions';
+
+type Props = {
+  sessionId: string;
+  groups: { id: string; name: string; language: string }[];
+  opinions: { id: string; category: string; group: string; body: string; bodyEn: string; votes: number }[];
+  profiles: { id: string; name: string }[];
+  summaryCount: number;
+  hasSummary: boolean;
+};
+
+export function AdminSessionPanel({ sessionId, groups, opinions, profiles, summaryCount, hasSummary }: Props) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [groupName, setGroupName] = useState('');
+  const [groupLang, setGroupLang] = useState('ja');
+  const [confirmId, setConfirmId] = useState('');
+
+  const run = (fn: () => Promise<AdminResult | void>, ok = 'Done') =>
+    start(async () => {
+      const res = await fn();
+      if (res && !res.ok) toast.error(res.error);
+      else toast.success(ok);
+      router.refresh();
+    });
+
+  const btn = 'rounded-lg px-3 py-1.5 text-sm disabled:opacity-50';
+
+  return (
+    <div className="space-y-8">
+      <section className="space-y-3">
+        <h2 className="font-semibold">Groups</h2>
+        <ul className="flex flex-wrap gap-2">
+          {groups.map((g) => (
+            <li key={g.id} className="flex items-center gap-2 rounded-full border bg-white px-3 py-1 text-sm">
+              {g.name} <span className="text-slate-400">{g.language}</span>
+              <button
+                disabled={pending}
+                className="text-rose-600"
+                onClick={() => run(() => deleteGroup(sessionId, g.id))}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+        <form
+          className="flex flex-wrap gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            run(async () => {
+              const r = await addGroup(sessionId, groupName, groupLang);
+              if (r.ok) setGroupName('');
+              return r;
+            }, 'Group added');
+          }}
+        >
+          <input
+            className="rounded border px-2 py-1 text-sm"
+            placeholder="JP-1"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            required
+          />
+          <select
+            className="rounded border px-2 py-1 text-sm bg-white"
+            value={groupLang}
+            onChange={(e) => setGroupLang(e.target.value)}
+          >
+            <option value="ja">ja</option>
+            <option value="en">en</option>
+          </select>
+          <button disabled={pending} className={`${btn} bg-slate-900 text-white`}>
+            Add group
+          </button>
+        </form>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-semibold">AI summary & report</h2>
+        <div className="flex flex-wrap gap-2">
+          <button
+            disabled={pending}
+            className={`${btn} bg-orange-500 text-white`}
+            onClick={() => run(() => runSummary(sessionId), 'Summary updated')}
+          >
+            {pending ? 'Working…' : 'Generate summary'}
+          </button>
+          {hasSummary && (
+            <button disabled={pending} className={`${btn} border`} onClick={() => run(() => clearSummary(sessionId))}>
+              Clear summary
+            </button>
+          )}
+          <a className={`${btn} border`} href={`/api/admin/export/${sessionId}?format=md`}>
+            Download report (.md)
+          </a>
+          <a className={`${btn} border`} href={`/api/admin/export/${sessionId}?format=csv`}>
+            Download notes (.csv)
+          </a>
+        </div>
+        <p className="text-xs text-slate-500">Summaries used: {summaryCount} / 20</p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-semibold">Notes ({opinions.length})</h2>
+        <ul className="divide-y rounded-xl border bg-white text-sm">
+          {opinions.map((o) => (
+            <li key={o.id} className="flex items-start gap-3 px-3 py-2">
+              <span className="w-12 shrink-0 text-xs text-slate-500">{o.category}</span>
+              <span className="w-16 shrink-0 text-xs text-slate-500">{o.group}</span>
+              <span className="flex-1 break-words">
+                {o.body}
+                {o.bodyEn !== o.body && <span className="block text-xs text-slate-500">{o.bodyEn}</span>}
+              </span>
+              <span className="text-xs">+{o.votes}</span>
+              <button
+                disabled={pending}
+                className="text-xs text-rose-600"
+                onClick={() => confirm('Delete this note?') && run(() => adminDeleteOpinion(sessionId, o.id))}
+              >
+                delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-semibold">Profiles ({profiles.length})</h2>
+        <ul className="flex flex-wrap gap-2 text-sm">
+          {profiles.map((p) => (
+            <li key={p.id} className="flex items-center gap-2 rounded-full border bg-white px-3 py-1">
+              {p.name}
+              <button
+                disabled={pending}
+                className="text-rose-600"
+                onClick={() => confirm('Delete this profile?') && run(() => adminDeleteProfile(sessionId, p.id))}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="space-y-3 rounded-xl border border-rose-300 bg-rose-50 p-4">
+        <h2 className="font-semibold text-rose-700">Delete all data of this session</h2>
+        <p className="text-sm">Removes notes, votes, groups, profiles and the session itself. This cannot be undone.</p>
+        <div className="flex gap-2">
+          <input
+            className="rounded border px-2 py-1 text-sm"
+            placeholder={`type "${sessionId}"`}
+            value={confirmId}
+            onChange={(e) => setConfirmId(e.target.value)}
+          />
+          <button
+            disabled={pending || confirmId !== sessionId}
+            className={`${btn} bg-rose-600 text-white`}
+            onClick={() => run(() => deleteSessionData(sessionId, confirmId), 'Deleted')}
+          >
+            Delete everything
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
