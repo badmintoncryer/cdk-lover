@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
+import { Preflight } from 'cdk-preflight';
+import { IdleCost } from 'cfn-idle-cost';
 import { MainStack } from '../lib/main-stack';
 import { UsEast1Stack } from '../lib/us-east-1-stack';
 
@@ -39,3 +41,8 @@ new MainStack(app, 'CdkLoverStack', {
 });
 
 cdk.Tags.of(app).add('Application', 'CdkLover');
+
+// Fail `cdk synth` on templates known to fail at deploy time (rules CloudFormation's schema misses).
+Preflight.apply(app);
+// Report what the stacks cost with zero traffic; fail synth if the idle cost exceeds the budget.
+IdleCost.apply(app, { max: props.budgetUsd, warnAbove: 1 });

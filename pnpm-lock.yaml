@@ -57,6 +57,12 @@ importers:
       aws-cdk:
         specifier: ^2.1146.1
         version: 2.1146.1
+      cdk-preflight:
+        specifier: ^1.10.0
+        version: 1.10.0(aws-cdk-lib@2.275.0(constructs@10.8.1))(constructs@10.8.1)
+      cfn-idle-cost:
+        specifier: ^1.7.4
+        version: 1.7.4(aws-cdk-lib@2.275.0(constructs@10.8.1))
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
@@ -2136,6 +2142,48 @@ packages:
     peerDependencies:
       aws-cdk-lib: ^2.176.0
       constructs: ^10.5.1
+
+  cdk-preflight@1.10.0:
+    resolution: {integrity: sha512-JlIUBeyAuaEowmkhUlcf9i30k/4MCSDljTCXvJkKNWboYJ+3sJ8FWptzS9cBiPJE5xRDSWM41qLyQeQW+KJuXg==}
+    hasBin: true
+    peerDependencies:
+      aws-cdk-lib: ^2.267.0
+      constructs: ^10.5.1
+    bundledDependencies:
+      - '@aws-sdk/client-cloudformation'
+      - '@aws-sdk/client-ec2'
+      - '@aws-sdk/client-lambda'
+      - '@aws-sdk/client-service-quotas'
+      - '@aws-sdk/client-sts'
+
+  cfn-idle-cost-darwin-arm64@1.7.4:
+    resolution: {integrity: sha512-KjJAkucJTuyHou3JajEG17nv+2NIe5rIiFg4/irddLFlkVq2gPVxUC5Pubr2euy9ZvGxeYXmYtX2kONFmFY6LQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  cfn-idle-cost-darwin-x64@1.7.4:
+    resolution: {integrity: sha512-QNL7QQ09E240SckOzqe0Tp3HZ00RoaZcSV2aoGPeGSZmVffY8LGyMs0b9kCyzrvNgnv7+Ay2cmIaV++zaOlS3Q==}
+    cpu: [x64]
+    os: [darwin]
+
+  cfn-idle-cost-linux-arm64@1.7.4:
+    resolution: {integrity: sha512-jgI2elY0wWvIOoOC8h6oqyFXWGnUEwpTaK2Xeps8Jris8UFvCA1Bj45PTA7iqH3JrQOI8qf5O1GA52bhCUJM4g==}
+    cpu: [arm64]
+    os: [linux]
+
+  cfn-idle-cost-linux-x64@1.7.4:
+    resolution: {integrity: sha512-GPasXaDn1R3aGPfNFxbSIpsvjNIk9GjaNNALG5Zg4z0FKRrS/5cpS4GWJrhU0iK8KLaCCROgl3o7f8DVUuVNcA==}
+    cpu: [x64]
+    os: [linux]
+
+  cfn-idle-cost@1.7.4:
+    resolution: {integrity: sha512-DMAr+3cpY5N1IZBuhBTbbzKXzEkrRSErvxWCdHPyyZkWPuUzwAWXg27YWXlCz0P1qY1ZLAITGZtKFxfUV+RQqA==}
+    hasBin: true
+    peerDependencies:
+      aws-cdk-lib: ^2.0.0
+    peerDependenciesMeta:
+      aws-cdk-lib:
+        optional: true
 
   chai@6.2.2:
     resolution: {integrity: sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==}
@@ -4683,6 +4731,31 @@ snapshots:
     dependencies:
       aws-cdk-lib: 2.275.0(constructs@10.8.1)
       constructs: 10.8.1
+
+  cdk-preflight@1.10.0(aws-cdk-lib@2.275.0(constructs@10.8.1))(constructs@10.8.1):
+    dependencies:
+      aws-cdk-lib: 2.275.0(constructs@10.8.1)
+      constructs: 10.8.1
+
+  cfn-idle-cost-darwin-arm64@1.7.4:
+    optional: true
+
+  cfn-idle-cost-darwin-x64@1.7.4:
+    optional: true
+
+  cfn-idle-cost-linux-arm64@1.7.4:
+    optional: true
+
+  cfn-idle-cost-linux-x64@1.7.4:
+    optional: true
+
+  cfn-idle-cost@1.7.4(aws-cdk-lib@2.275.0(constructs@10.8.1)):
+    optionalDependencies:
+      aws-cdk-lib: 2.275.0(constructs@10.8.1)
+      cfn-idle-cost-darwin-arm64: 1.7.4
+      cfn-idle-cost-darwin-x64: 1.7.4
+      cfn-idle-cost-linux-arm64: 1.7.4
+      cfn-idle-cost-linux-x64: 1.7.4
 
   chai@6.2.2: {}
 

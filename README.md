@@ -25,6 +25,13 @@ AWS re:Invent のコミュニティセッション「CDK Lover」専用の Web �
 - Secrets Manager: 管理者パスワードと署名鍵（デプロイ時に自動生成）
 - WAF（CloudFront 定額 Free プラン用）。全員が同じ会場 IP から来るので、IP レート制限ルールは入れていません
 
+## synth 時のチェック
+
+`cdk synth` / `cdk deploy` のたびに次の 2 つが走ります（`apps/cdk/bin/cdk.ts`）。
+
+- [cdk-preflight](https://github.com/badmintoncryer/cdk-preflight): デプロイ途中で失敗すると分かっているテンプレートを synth の時点で止めます。
+- [cfn-idle-cost](https://github.com/badmintoncryer/cfn-idle-cost): アクセスゼロでもかかる月額（アイドルコスト）を表示し、`budgetUsd`（既定 $20）を超えたら synth を失敗させます。1 ドル/月以上のリソースは警告として出ます。現状は約 $6.80/月で、ほぼ WAF です（CloudFront を Free プランに切り替えれば WAF 分はかかりません）。
+
 ## デプロイ
 
 前提: Node.js 22+、pnpm 10、AWS CLI の認証、デプロイ先アカウントで `cdk bootstrap` 済み（us-east-1 と us-west-2 の両方）。
