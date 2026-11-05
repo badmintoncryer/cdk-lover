@@ -54,9 +54,25 @@ pnpm exec cdk deploy --all -c translateModelId=<model or inference profile id> -
 デプロイ後に一度だけやること:
 
 1. Bedrock コンソールで、使うモデルが呼び出せる状態か確認する（Nova はアカウントで有効化済みなら追加作業なし）。
+2. IP 制限に自分の IP を登録する（下記）。登録するまでは誰もアクセスできません。
+
+### IP 制限（本番前の保護）
+
+既定で、CloudFront Function と KeyValueStore による IPv4 の許可リストが有効です（WAF は不要です）。リストはデプロイせずに数秒で書き換えられます。
+
+```bash
+cd apps/cdk
+scripts/allow-ip.sh                      # 今の自分のグローバル IPv4 だけを許可
+scripts/allow-ip.sh 203.0.113.7,198.51.100.0/24
+scripts/allow-ip.sh show                 # 現在のリストを表示
+scripts/allow-ip.sh open                 # 全員に公開（当日）
+```
+
+IP が変わったら `scripts/allow-ip.sh` を実行し直してください。制限中は IPv6 を無効にしています。機能自体を外すには `-c ipRestriction=false` でデプロイします。
 
 ## 当日の手順
 
+0. `apps/cdk/scripts/allow-ip.sh open` で全員に公開する。
 1. `/admin` にログインし、回を作る（例: ID `1130`、パスフレーズ、受付 open）。
 2. グループを作る（例: `JP-1` ja、`JP-2` ja、`EN-1` en）。
 3. スクリーンに `/s/1130/screen` を映す。QR から参加し、口頭でパスフレーズを伝える。

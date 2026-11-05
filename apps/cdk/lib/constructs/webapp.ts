@@ -6,7 +6,7 @@ import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { CloudFrontLambdaFunctionUrlService } from './cf-lambda-furl-service/service';
-import { GeoRestriction } from 'aws-cdk-lib/aws-cloudfront';
+import { type FunctionAssociation, GeoRestriction } from 'aws-cdk-lib/aws-cloudfront';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Database } from './database';
 import { EdgeFunction } from './cf-lambda-furl-service/edge-function';
@@ -28,6 +28,8 @@ export interface WebappProps {
   summaryModelId: string;
   webAclId?: string;
   geoRestriction?: GeoRestriction;
+  functionAssociations?: FunctionAssociation[];
+  enableIpv6?: boolean;
 }
 
 export class Webapp extends Construct {
@@ -99,6 +101,8 @@ export class Webapp extends Construct {
       signPayloadHandler: props.signPayloadHandler,
       webAclId: props.webAclId,
       geoRestriction: props.geoRestriction,
+      functionAssociations: props.functionAssociations,
+      enableIpv6: props.enableIpv6,
     });
     this.baseUrl = service.url;
   }
