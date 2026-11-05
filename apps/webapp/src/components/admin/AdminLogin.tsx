@@ -4,6 +4,9 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { adminLogin } from '@/app/admin/actions';
+import { Logo } from '@/components/SiteHeader';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export function AdminLogin() {
   const router = useRouter();
@@ -11,7 +14,7 @@ export function AdminLogin() {
   const [pending, start] = useTransition();
   return (
     <form
-      className="space-y-3 rounded-2xl border bg-white p-6 shadow-sm"
+      className="space-y-4 rounded-2xl border bg-card p-6 shadow-sm"
       onSubmit={(e) => {
         e.preventDefault();
         start(async () => {
@@ -21,18 +24,20 @@ export function AdminLogin() {
         });
       }}
     >
-      <h1 className="font-bold">Admin</h1>
-      <input
+      <h1 className="text-center text-2xl">
+        <Logo />
+        <span className="mt-1 block text-sm font-medium text-muted-foreground">Admin</span>
+      </h1>
+      <Input
         type="password"
-        className="w-full rounded-lg border px-3 py-2"
         placeholder="Admin password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-      <button disabled={pending} className="w-full rounded-lg bg-slate-900 py-2 text-white disabled:opacity-50">
+      <Button type="submit" variant="dark" disabled={pending} className="w-full">
         Log in
-      </button>
+      </Button>
     </form>
   );
 }

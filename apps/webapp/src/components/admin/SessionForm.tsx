@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { upsertSession } from '@/app/admin/actions';
+import { Button } from '@/components/ui/button';
+import { Input, Label, Select } from '@/components/ui/input';
 
 type Initial = { id: string; title: string; status: 'open' | 'closed' };
 
@@ -18,7 +20,7 @@ export function SessionForm({ initial }: { initial?: Initial }) {
   });
   return (
     <form
-      className="grid gap-3 rounded-xl border bg-white p-4 sm:grid-cols-2"
+      className="grid gap-4 rounded-2xl border bg-card p-5 shadow-sm sm:grid-cols-2"
       onSubmit={(e) => {
         e.preventDefault();
         start(async () => {
@@ -31,54 +33,46 @@ export function SessionForm({ initial }: { initial?: Initial }) {
         });
       }}
     >
-      <label className="text-sm space-y-1">
-        <span>ID (URL: /s/&lt;id&gt;)</span>
-        <input
-          className="w-full rounded border px-2 py-1 disabled:bg-slate-100"
+      <Label>
+        <span className="text-muted-foreground">ID (URL: /s/&lt;id&gt;)</span>
+        <Input
           value={form.id}
           onChange={(e) => setForm({ ...form, id: e.target.value })}
           placeholder="1130"
           disabled={!!initial}
           required
         />
-      </label>
-      <label className="text-sm space-y-1">
-        <span>Title</span>
-        <input
-          className="w-full rounded border px-2 py-1"
+      </Label>
+      <Label>
+        <span className="text-muted-foreground">Title</span>
+        <Input
           value={form.title}
           onChange={(e) => setForm({ ...form, title: e.target.value })}
           placeholder="re:Invent 2026 · Nov 30"
           required
         />
-      </label>
-      <label className="text-sm space-y-1">
-        <span>Passphrase {initial && '(leave empty to keep; changing it signs everyone out)'}</span>
-        <input
-          className="w-full rounded border px-2 py-1"
+      </Label>
+      <Label>
+        <span className="text-muted-foreground">
+          Passphrase {initial && '(leave empty to keep; changing it signs everyone out)'}
+        </span>
+        <Input
           value={form.passphrase}
           onChange={(e) => setForm({ ...form, passphrase: e.target.value })}
           required={!initial}
           autoComplete="off"
         />
-      </label>
-      <label className="text-sm space-y-1">
-        <span>Status</span>
-        <select
-          className="w-full rounded border px-2 py-1 bg-white"
-          value={form.status}
-          onChange={(e) => setForm({ ...form, status: e.target.value as 'open' | 'closed' })}
-        >
+      </Label>
+      <Label>
+        <span className="text-muted-foreground">Status</span>
+        <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as 'open' | 'closed' })}>
           <option value="open">open (accepts posts)</option>
           <option value="closed">closed (read-only)</option>
-        </select>
-      </label>
-      <button
-        disabled={pending}
-        className="rounded-lg bg-slate-900 px-4 py-2 text-white disabled:opacity-50 sm:col-span-2"
-      >
+        </Select>
+      </Label>
+      <Button type="submit" variant="dark" disabled={pending} className="sm:col-span-2">
         {initial ? 'Save' : 'Create session'}
-      </button>
+      </Button>
     </form>
   );
 }

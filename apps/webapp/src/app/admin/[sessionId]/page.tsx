@@ -20,7 +20,7 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ s
   ]);
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 space-y-8">
+    <main className="mx-auto max-w-5xl px-4 py-8 space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         <Link href="/admin" className="text-sm underline">
           ← Sessions
@@ -56,10 +56,10 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ s
 
       {session.summaryEn && (
         <section className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl border bg-white p-4 text-sm">
+          <div className="rounded-2xl border bg-card p-5 text-sm shadow-sm">
             <Markdown text={session.summaryEn} />
           </div>
-          <div className="rounded-xl border bg-white p-4 text-sm">
+          <div className="rounded-2xl border bg-card p-5 text-sm shadow-sm">
             <Markdown text={session.summaryJa ?? ''} />
           </div>
         </section>

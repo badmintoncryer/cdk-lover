@@ -38,15 +38,16 @@ export function AdminSessionPanel({ sessionId, groups, opinions, profiles, summa
       router.refresh();
     });
 
-  const btn = 'rounded-lg px-3 py-1.5 text-sm disabled:opacity-50';
+  const btn = 'inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium transition disabled:opacity-50';
+  const card = 'space-y-3 rounded-2xl border bg-card p-5 shadow-sm';
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-3">
-        <h2 className="font-semibold">Groups</h2>
+    <div className="space-y-5">
+      <section className={card}>
+        <h2 className="font-bold">Groups</h2>
         <ul className="flex flex-wrap gap-2">
           {groups.map((g) => (
-            <li key={g.id} className="flex items-center gap-2 rounded-full border bg-white px-3 py-1 text-sm">
+            <li key={g.id} className="flex items-center gap-2 rounded-full border bg-secondary px-3 py-1 text-sm">
               {g.name} <span className="text-slate-400">{g.language}</span>
               <button
                 disabled={pending}
@@ -70,54 +71,58 @@ export function AdminSessionPanel({ sessionId, groups, opinions, profiles, summa
           }}
         >
           <input
-            className="rounded border px-2 py-1 text-sm"
+            className="h-9 rounded-lg border bg-card px-3 text-sm"
             placeholder="JP-1"
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
             required
           />
           <select
-            className="rounded border px-2 py-1 text-sm bg-white"
+            className="h-9 rounded-lg border bg-card px-2 text-sm"
             value={groupLang}
             onChange={(e) => setGroupLang(e.target.value)}
           >
             <option value="ja">ja</option>
             <option value="en">en</option>
           </select>
-          <button disabled={pending} className={`${btn} bg-slate-900 text-white`}>
+          <button disabled={pending} className={`${btn} bg-slate-900 text-white hover:bg-slate-800`}>
             Add group
           </button>
         </form>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="font-semibold">AI summary & report</h2>
+      <section className={card}>
+        <h2 className="font-bold">AI summary & report</h2>
         <div className="flex flex-wrap gap-2">
           <button
             disabled={pending}
-            className={`${btn} bg-orange-500 text-white`}
+            className={`${btn} bg-primary text-primary-foreground hover:bg-primary/90`}
             onClick={() => run(() => runSummary(sessionId), 'Summary updated')}
           >
             {pending ? 'Working…' : 'Generate summary'}
           </button>
           {hasSummary && (
-            <button disabled={pending} className={`${btn} border`} onClick={() => run(() => clearSummary(sessionId))}>
+            <button
+              disabled={pending}
+              className={`${btn} border bg-card hover:bg-accent`}
+              onClick={() => run(() => clearSummary(sessionId))}
+            >
               Clear summary
             </button>
           )}
-          <a className={`${btn} border`} href={`/api/admin/export/${sessionId}?format=md`}>
+          <a className={`${btn} border bg-card hover:bg-accent`} href={`/api/admin/export/${sessionId}?format=md`}>
             Download report (.md)
           </a>
-          <a className={`${btn} border`} href={`/api/admin/export/${sessionId}?format=csv`}>
+          <a className={`${btn} border bg-card hover:bg-accent`} href={`/api/admin/export/${sessionId}?format=csv`}>
             Download notes (.csv)
           </a>
         </div>
         <p className="text-xs text-slate-500">Summaries used: {summaryCount} / 20</p>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="font-semibold">Notes ({opinions.length})</h2>
-        <ul className="divide-y rounded-xl border bg-white text-sm">
+      <section className={card}>
+        <h2 className="font-bold">Notes ({opinions.length})</h2>
+        <ul className="max-h-[480px] divide-y overflow-y-auto rounded-xl border text-sm">
           {opinions.map((o) => (
             <li key={o.id} className="flex items-start gap-3 px-3 py-2">
               <span className="w-12 shrink-0 text-xs text-slate-500">{o.category}</span>
@@ -139,11 +144,11 @@ export function AdminSessionPanel({ sessionId, groups, opinions, profiles, summa
         </ul>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="font-semibold">Profiles ({profiles.length})</h2>
+      <section className={card}>
+        <h2 className="font-bold">Profiles ({profiles.length})</h2>
         <ul className="flex flex-wrap gap-2 text-sm">
           {profiles.map((p) => (
-            <li key={p.id} className="flex items-center gap-2 rounded-full border bg-white px-3 py-1">
+            <li key={p.id} className="flex items-center gap-2 rounded-full border bg-secondary px-3 py-1">
               {p.name}
               <button
                 disabled={pending}
@@ -157,12 +162,12 @@ export function AdminSessionPanel({ sessionId, groups, opinions, profiles, summa
         </ul>
       </section>
 
-      <section className="space-y-3 rounded-xl border border-rose-300 bg-rose-50 p-4">
+      <section className="space-y-3 rounded-2xl border border-rose-300 bg-rose-50 p-5">
         <h2 className="font-semibold text-rose-700">Delete all data of this session</h2>
         <p className="text-sm">Removes notes, votes, groups, profiles and the session itself. This cannot be undone.</p>
         <div className="flex gap-2">
           <input
-            className="rounded border px-2 py-1 text-sm"
+            className="h-9 rounded-lg border bg-card px-3 text-sm"
             placeholder={`type "${sessionId}"`}
             value={confirmId}
             onChange={(e) => setConfirmId(e.target.value)}

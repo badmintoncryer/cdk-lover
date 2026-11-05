@@ -10,22 +10,30 @@ export function LangToggle({ lang }: { lang: Lang }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const choose = (l: Lang) =>
+    l !== lang &&
     start(async () => {
       await setLang(l);
       router.refresh();
     });
   return (
-    <div className={cn('inline-flex rounded-full border border-white/40 text-xs', pending && 'opacity-60')}>
+    <fieldset
+      aria-label="Language"
+      className={cn('inline-flex rounded-full bg-white/10 p-0.5 text-xs', pending && 'opacity-60')}
+    >
       {(['ja', 'en'] as const).map((l) => (
         <button
           key={l}
           type="button"
           onClick={() => choose(l)}
-          className={cn('px-3 py-1 rounded-full', lang === l ? 'bg-white text-slate-900' : 'text-white')}
+          aria-pressed={lang === l}
+          className={cn(
+            'rounded-full px-2.5 py-1 font-medium transition-colors',
+            lang === l ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white',
+          )}
         >
-          {l === 'ja' ? '日本語' : 'English'}
+          {l === 'ja' ? '日本語' : 'EN'}
         </button>
       ))}
-    </div>
+    </fieldset>
   );
 }

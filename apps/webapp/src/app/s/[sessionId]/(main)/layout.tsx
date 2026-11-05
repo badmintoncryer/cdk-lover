@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LiveRefresh } from '@/components/LiveRefresh';
+import { SessionNav } from '@/components/SessionNav';
 import { SiteHeader } from '@/components/SiteHeader';
 import { getSession } from '@/lib/data';
 import { getLang } from '@/lib/identity';
@@ -18,22 +18,16 @@ export default async function SessionLayout({
   const { sessionId } = await params;
   const [lang, session] = await Promise.all([getLang(), getSession(sessionId)]);
   if (!session) notFound();
-  const link = 'px-3 py-1 rounded-full hover:bg-white/10';
   return (
     <>
       <SiteHeader lang={lang} title={session.title}>
-        <Link className={link} href={`/s/${sessionId}`}>
-          {t(lang, 'board')}
-        </Link>
-        <Link className={link} href={`/s/${sessionId}/people`}>
-          {t(lang, 'people')}
-        </Link>
-        <Link className={link} href={`/s/${sessionId}/screen`} target="_blank">
-          {t(lang, 'screen')} ↗
-        </Link>
+        <SessionNav
+          sessionId={sessionId}
+          labels={{ board: t(lang, 'board'), people: t(lang, 'people'), screen: t(lang, 'screen') }}
+        />
       </SiteHeader>
       <LiveRefresh sessionId={sessionId} />
-      <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 pt-4 pb-16 sm:pt-6">{children}</main>
     </>
   );
 }
