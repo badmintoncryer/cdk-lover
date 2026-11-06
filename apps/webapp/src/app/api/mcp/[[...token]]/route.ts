@@ -41,9 +41,10 @@ export async function POST(req: Request, ctx: Params) {
     return rpcError(500, 'internal error');
   }
   if (!who) {
-    return rpcError(401, 'invalid or expired token: get a new one from the board ("Use from AI")', {
-      'www-authenticate': 'Bearer',
-    });
+    return rpcError(
+      401,
+      'invalid or expired token: put it in the URL path, /api/mcp/<token> (attendees get a new one from the board)',
+    );
   }
   const server = createMcpServer(who);
   const transport = new WebStandardStreamableHTTPServerTransport({

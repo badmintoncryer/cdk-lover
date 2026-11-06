@@ -61,7 +61,7 @@ export function McpPanel({ lang, sessionId }: { lang: Lang; sessionId: string })
           <CopyField
             lang={lang}
             label={t(lang, 'mcpCli')}
-            value={`claude mcp add --transport http cdk-lover ${base} --header "Authorization: Bearer ${token}"`}
+            value={`claude mcp add --transport http cdk-lover "${base}/${token}"`}
           />
           <p className="text-xs text-muted-foreground">{t(lang, 'mcpWarn')}</p>
         </div>
