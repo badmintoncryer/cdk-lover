@@ -2,6 +2,7 @@ import { Lock } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { Board } from '@/components/board/Board';
 import { JoinPanel } from '@/components/board/JoinPanel';
+import { McpPanel } from '@/components/board/McpPanel';
 import { getSession, listGroups, listOpinions } from '@/lib/data';
 import { getGroupId, getLang, isJoined, keyFor } from '@/lib/identity';
 import { t } from '@/lib/i18n';
@@ -40,6 +41,7 @@ export default async function BoardPage({ params }: { params: Promise<{ sessionI
         myGroupId={myGroup?.id}
         opinions={opinions}
       />
+      {open && joined && <McpPanel lang={lang} sessionId={sessionId} />}
     </div>
   );
 }

@@ -24,6 +24,7 @@ export interface WebappProps {
   eventBus: EventBus;
   signingKey: ISecret;
   adminPassword: ISecret;
+  mcpAdminToken: ISecret;
   translateModelId: string;
   summaryModelId: string;
   webAclId?: string;
@@ -65,6 +66,7 @@ export class Webapp extends Construct {
         EVENT_HTTP_ENDPOINT: eventBus.httpEndpoint,
         SIGNING_KEY_SECRET_ARN: props.signingKey.secretArn,
         ADMIN_PASSWORD_SECRET_ARN: props.adminPassword.secretArn,
+        MCP_ADMIN_TOKEN_SECRET_ARN: props.mcpAdminToken.secretArn,
         TRANSLATE_MODEL_ID: props.translateModelId,
         SUMMARY_MODEL_ID: props.summaryModelId,
       },
@@ -79,6 +81,7 @@ export class Webapp extends Construct {
     eventBus.api.grantPublish(handler);
     props.signingKey.grantRead(handler);
     props.adminPassword.grantRead(handler);
+    props.mcpAdminToken.grantRead(handler);
     // Only the two configured models. A cross-region inference profile (us.*) routes to the
     // foundation model in any US region, so the foundation-model ARN keeps a region wildcard.
     const modelIds = [...new Set([props.translateModelId, props.summaryModelId])];

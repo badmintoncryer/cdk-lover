@@ -2,6 +2,9 @@
 // address matches an entry of the "allowed" key in the KeyValueStore: comma-separated IPs or
 // CIDRs, e.g. "203.0.113.7, 198.51.100.0/24". "0.0.0.0/0" opens the site to everyone.
 // A missing key or any error blocks (fail closed).
+// The MCP endpoint (/api/mcp) is exempt: claude.ai / Claude Desktop connectors call it from
+// Anthropic's cloud, not the attendee's IP, and every request there needs a bearer token that is
+// only issued behind this allowlist (participants) or read from Secrets Manager (admin).
 import cf from 'cloudfront';
 
 const kvs = cf.kvs('__KVS_ID__');
@@ -32,6 +35,10 @@ export function matches(ip, entry) {
   return Math.floor(addr / size) === Math.floor(net / size);
 }
 
+export function bypasses(uri) {
+  return uri === '/api/mcp' || uri.indexOf('/api/mcp/') === 0;
+}
+
 const deny = {
   statusCode: 403,
   statusDescription: 'Forbidden',
@@ -40,6 +47,7 @@ const deny = {
 };
 
 async function handler(event) {
+  if (bypasses(event.request.uri)) return event.request;
   const ip = event.viewer.ip;
   try {
     const allowed = await kvs.get('allowed');

@@ -12,6 +12,7 @@ AWS re:Invent のコミュニティセッション「CDK Lover」専用の Web �
 | 参加者     | `/s/<id>/people` | 名前・ひとこと・LinkedIn / X / GitHub のカード一覧（回ごと）                                                                             |
 | スクリーン | `/s/<id>/screen` | 投影用。カテゴリ別・+1 順、参加用 QR、AI まとめ。`?lang=ja` で日本語表示                                                                 |
 | 管理       | `/admin`         | 回の作成、パスフレーズ設定、受付の開始/終了、グループ作成、AI まとめ実行、レポート出力（Markdown / CSV）、削除                           |
+| MCP        | `/api/mcp`       | 画面を開かずに AI アシスタントから操作するための MCP サーバー（下記）                                                                    |
 
 - 意見は匿名で表示します。ブラウザごとのランダム ID のハッシュだけを保存し、用途（意見 / +1 / プロフィール）ごとに salt を変えているので、意見とプロフィールは紐づきません。
 - 書き込み（投稿・+1・プロフィール）はその回のパスフレーズを入れたブラウザだけが行えます。AI 処理はすべて書き込み経由なので、パスフレーズが AI コストの防波堤になります。加えて 1 人あたり投稿 60 件、本文 400 文字、AI まとめは各回 20 回までの上限があります。
@@ -22,7 +23,7 @@ AWS re:Invent のコミュニティセッション「CDK Lover」専用の Web �
 - Aurora DSQL + Drizzle ORM（`cdk destroy` で削除されるよう `RemovalPolicy.DESTROY`）
 - AppSync Events: ブラウザは API キーで購読のみ、発行は Lambda から IAM で。会場 Wi-Fi が切れても 10 秒ごとのポーリングで追いつきます
 - Amazon Bedrock: 翻訳 `us.amazon.nova-lite-v1:0`、まとめ `us.amazon.nova-pro-v1:0`（デプロイ時に変更可）
-- Secrets Manager: 管理者パスワードと署名鍵（デプロイ時に自動生成）
+- Secrets Manager: 管理者パスワード、署名鍵、MCP 管理者トークン（デプロイ時に自動生成）
 - WAF は付けていません（一時的なイベントサイトでアイドルコストを避けるため）。CloudFront は従量課金です
 
 ## synth 時のチェック
@@ -30,7 +31,7 @@ AWS re:Invent のコミュニティセッション「CDK Lover」専用の Web �
 `cdk synth` / `cdk deploy` のたびに次の 2 つが走ります（`apps/cdk/bin/cdk.ts`）。
 
 - [cdk-preflight](https://github.com/badmintoncryer/cdk-preflight): デプロイ途中で失敗すると分かっているテンプレートを synth の時点で止めます。
-- [cfn-idle-cost](https://github.com/badmintoncryer/cfn-idle-cost): アクセスゼロでもかかる月額（アイドルコスト）を表示し、`budgetUsd`（既定 $20）を超えたら synth を失敗させます。1 ドル/月以上のリソースは警告として出ます。WAF は付けていないので、現状のアイドルコストは Secrets Manager の 2 本分（約 $0.80/月）だけです。
+- [cfn-idle-cost](https://github.com/badmintoncryer/cfn-idle-cost): アクセスゼロでもかかる月額（アイドルコスト）を表示し、`budgetUsd`（既定 $20）を超えたら synth を失敗させます。1 ドル/月以上のリソースは警告として出ます。WAF は付けていないので、現状のアイドルコストは Secrets Manager の 3 本分（約 $1.20/月）だけです。
 
 ## デプロイ
 
@@ -81,6 +82,27 @@ IP が変わったら `scripts/allow-ip.sh` を実行し直してください。
 6. 終わったら受付を closed にし、「Download report (.md)」でレポートを保存。
 
 パスフレーズを変えると、その回に参加済みのブラウザは再入力が必要になります（漏れたときの対処に使えます）。
+
+## MCP サーバー
+
+`/api/mcp` は MCP（Streamable HTTP、ステートレス）のエンドポイントです。webapp と同じ Lambda で動き、画面と同じロジック（`apps/webapp/src/lib/core/`）を呼ぶので、上限・翻訳・リアルタイム反映は画面と同じです。接続トークンの種類で使えるツールが変わります。
+
+| トークン | 入手方法                                                                     | ツール                                                                                                       |
+| -------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 参加者   | ボードでパスフレーズを入れた後の「AI から使う (MCP)」→「接続 URL を発行」    | その回の意見の閲覧・投稿・編集・削除、+1、参加者一覧、自分のプロフィールの登録・削除                         |
+| 管理者   | デプロイ出力 `McpAdminTokenCommand` のコマンド（AWS の認証情報が必要）       | 管理画面の操作すべて（`admin_*`: 回の作成・編集、グループ、モデレーション、AI まとめ、レポート、回の削除） |
+
+- 参加者トークンはブラウザと同じ匿名 ID として扱われるので、MCP で書いた意見を画面から編集でき、その逆もできます。有効期限は 14 日で、回のパスフレーズを変えるとその回のトークンはすべて無効になります。
+- 管理者トークンは Secrets Manager のシークレット `McpAdminToken` です。ローテートすると古いトークンは使えなくなります。
+- トークンは `Authorization: Bearer <token>` ヘッダーか、URL のパス `/api/mcp/<token>` で渡します（claude.ai / Claude Desktop のカスタムコネクタはヘッダーを設定できないのでパス形式）。
+- IP 制限中も `/api/mcp` だけは通します。claude.ai のコネクタは Anthropic のクラウドから接続してくるためです。トークンは IP 制限された画面か AWS からしか取れないので、事前に第三者が使える経路は増えません。
+
+管理者として Claude Code から使う例:
+
+```bash
+TOKEN=$(aws secretsmanager get-secret-value --region us-west-2 --secret-id <McpAdminTokenCommand の secret-id> --query SecretString --output text)
+claude mcp add --transport http cdk-lover-admin https://<FrontendDomainName>/api/mcp --header "Authorization: Bearer $TOKEN"
+```
 
 ## 撤去
 

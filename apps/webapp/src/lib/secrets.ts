@@ -27,3 +27,9 @@ function load(arnEnv: string, plainEnv: string): Promise<string> {
 
 export const getSigningKey = () => load('SIGNING_KEY_SECRET_ARN', 'SIGNING_KEY');
 export const getAdminPassword = () => load('ADMIN_PASSWORD_SECRET_ARN', 'ADMIN_PASSWORD');
+
+/** Bearer token for the admin tools of the MCP endpoint. Empty when not configured (admin MCP off). */
+export async function getMcpAdminToken(): Promise<string> {
+  if (!process.env.MCP_ADMIN_TOKEN && !process.env.MCP_ADMIN_TOKEN_SECRET_ARN) return '';
+  return (await load('MCP_ADMIN_TOKEN_SECRET_ARN', 'MCP_ADMIN_TOKEN')).trim();
+}
