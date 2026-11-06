@@ -1,5 +1,5 @@
 /**
- * Bearer tokens for the MCP endpoint. Nothing is stored: a participant token is signed with the
+ * Tokens for the MCP endpoint. Nothing is stored: a participant token is signed with the
  * app's signing key, and the admin token is a random secret only the AWS account can read.
  *
  * Participant token: `p1.<sessionId>.<participantId>.<expiresAt>.<sig>`. It carries the same
@@ -57,7 +57,12 @@ export function isAdminToken(token: string, adminSecret: string): boolean {
   return adminSecret.length >= 32 && safeEqual(token, adminSecret);
 }
 
-/** Bearer header first, then the last path segment (`/api/mcp/<token>`) for clients without headers. */
+/**
+ * The token travels in the path (`/api/mcp/<token>`). Behind CloudFront the viewer's Authorization
+ * header never reaches the function: the OAC-signed Lambda Function URL request carries
+ * CloudFront's own SigV4 Authorization header instead. A Bearer header is still honored for local
+ * development, where requests hit Next.js directly.
+ */
 export function tokenFromRequest(req: Request, pathToken?: string): string | undefined {
   const auth = req.headers.get('authorization');
   const m = auth?.match(/^Bearer\s+(\S+)$/i);

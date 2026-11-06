@@ -101,14 +101,14 @@ IP が変わったら `scripts/allow-ip.sh` を実行し直してください。
 
 - 参加者トークンはブラウザと同じ匿名 ID として扱われるので、MCP で書いた意見を画面から編集でき、その逆もできます。有効期限は 14 日で、回のパスフレーズを変えるとその回のトークンはすべて無効になります。
 - 管理者トークンは Secrets Manager のシークレット `McpAdminToken` です。ローテートすると古いトークンは使えなくなります。
-- トークンは `Authorization: Bearer <token>` ヘッダーか、URL のパス `/api/mcp/<token>` で渡します（claude.ai / Claude Desktop のカスタムコネクタはヘッダーを設定できないのでパス形式）。
+- トークンは URL のパス `/api/mcp/<token>` で渡します。`Authorization` ヘッダーは使えません。CloudFront が Lambda Function URL を呼ぶとき（OAC + IAM 認証）に、自分の SigV4 署名で上書きするためです。
 - `/api/mcp` も IP 制限の対象です。claude.ai / Claude Desktop のカスタムコネクタは Anthropic のクラウドから接続してくるので、制限中は使えません。制限中に使えるのは、許可した IP の PC から接続する Claude Code だけです。`allow-ip.sh open` の後はどのクライアントからも使えます。
 
 管理者として Claude Code から使う例:
 
 ```bash
 TOKEN=$(aws secretsmanager get-secret-value --region us-west-2 --secret-id <McpAdminTokenCommand の secret-id> --query SecretString --output text)
-claude mcp add --transport http cdk-lover-admin https://<FrontendDomainName>/api/mcp --header "Authorization: Bearer $TOKEN"
+claude mcp add -s user --transport http cdk-lover-admin "https://<FrontendDomainName>/api/mcp/$TOKEN"
 ```
 
 ## 撤去
