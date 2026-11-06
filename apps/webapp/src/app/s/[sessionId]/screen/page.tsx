@@ -1,6 +1,7 @@
-import { ThumbsUp } from 'lucide-react';
+import { StickyNote, ThumbsUp, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Credit } from '@/components/Credit';
 import { FullscreenButton } from '@/components/FullscreenButton';
 import { JoinQr } from '@/components/JoinQr';
 import { LiveRefresh } from '@/components/LiveRefresh';
@@ -57,6 +58,7 @@ export default async function ScreenPage({
             <Logo />
           </h1>
           <p className="mt-2 text-lg font-medium text-slate-400">{session.title}</p>
+          <Credit className="mt-1 text-sm text-slate-400" />
         </div>
         <dl className="flex gap-6">
           <Stat label={t(lang, 'statNotes')} value={filtered.length} />
@@ -66,7 +68,7 @@ export default async function ScreenPage({
           <div className="text-right">
             <div className="text-xl font-bold">{t(lang, 'scanToJoin')}</div>
             <div className="text-sm text-slate-400">
-              {lang === 'ja' ? '付箋を投稿・+1 しよう' : 'Post notes & +1 from your phone'}
+              {lang === 'ja' ? 'スマホから意見を投稿・+1 しよう' : 'Share feedback & +1 from your phone'}
             </div>
           </div>
           <JoinQr path={`/s/${sessionId}`} size={112} showUrl={false} />
@@ -75,8 +77,17 @@ export default async function ScreenPage({
 
       {/* Operator controls stay dim so they don't compete with the notes on the projector. */}
       <nav className="flex flex-wrap items-center gap-1 px-6 pb-3 text-sm opacity-60 transition-opacity hover:opacity-100 focus-within:opacity-100">
+        <Link className={cn(tab(false), 'inline-flex items-center gap-1.5')} href={`/s/${sessionId}`}>
+          <StickyNote className="size-4" />
+          {t(lang, 'board')}
+        </Link>
+        <Link className={cn(tab(false), 'inline-flex items-center gap-1.5')} href={`/s/${sessionId}/people`}>
+          <Users className="size-4" />
+          {t(lang, 'people')}
+        </Link>
+        <span className="mx-2 h-4 border-l border-white/20" />
         <Link className={tab(view === 'notes')} href={q({ view: 'notes' })}>
-          Notes
+          {t(lang, 'statNotes')}
         </Link>
         <Link className={tab(view === 'summary')} href={q({ view: 'summary' })}>
           ✨ {t(lang, 'summary')}

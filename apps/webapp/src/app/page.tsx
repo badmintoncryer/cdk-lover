@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { SiteFooter } from '@/components/Credit';
 import { Logo, SiteHeader } from '@/components/SiteHeader';
 import { listSessions } from '@/lib/data';
 import { getLang } from '@/lib/identity';
@@ -68,6 +69,7 @@ export default async function Home() {
           </ul>
         )}
       </main>
+      <SiteFooter />
     </>
   );
 }

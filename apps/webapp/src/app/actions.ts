@@ -182,9 +182,21 @@ export async function deleteOpinion(sessionId: string, opinionId: string): Promi
   }
 }
 
+/**
+ * +1 does not need the passphrase so people can react from the first minute, before they join.
+ * It calls no AI model and the (opinion, voter) primary key caps it at one vote per browser.
+ */
+async function requireVoter(sessionId: string) {
+  const session = await getSession(sessionId);
+  if (!session) throw new Error('session not found');
+  if (session.status !== 'open') throw new Error('closed');
+  const pid = await ensureParticipantId();
+  return purposeKey(await getSigningKey(), 'vote', pid);
+}
+
 export async function toggleVote(sessionId: string, opinionId: string): Promise<ActionResult> {
   try {
-    const { voterKey } = await requireJoined(sessionId);
+    const voterKey = await requireVoter(sessionId);
     const target = await db.query.opinions.findFirst({
       where: and(eq(opinions.id, opinionId), eq(opinions.sessionId, sessionId)),
     });

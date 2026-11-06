@@ -34,7 +34,7 @@ cd apps/webapp && pnpm run dev
 ### Access model
 
 - No login for attendees. A random browser id (`cl_pid` cookie) is hashed per purpose with the signing key (`lib/crypto.ts` `purposeKey`) so opinions, votes and profiles cannot be linked to each other. Never store the raw id or join these keys.
-- Every attendee mutation in `app/actions.ts` must go through `requireJoined()`, which checks the per-session passphrase cookie. This is the AI cost guard: translation only runs behind it.
+- Every attendee mutation in `app/actions.ts` must go through `requireJoined()`, which checks the per-session passphrase cookie. This is the AI cost guard: translation only runs behind it. The one exception is `toggleVote` (`requireVoter()`): +1 is open to anyone viewing an open session; never let it reach an AI call.
 - Admin mutations in `app/admin/actions.ts` and `/api/admin/*` must call `requireAdmin()` / `isAdmin()`.
 
 ### Database

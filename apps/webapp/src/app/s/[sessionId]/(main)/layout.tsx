@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { SiteFooter } from '@/components/Credit';
 import { LiveRefresh } from '@/components/LiveRefresh';
 import { SessionNav } from '@/components/SessionNav';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -28,6 +29,7 @@ export default async function SessionLayout({
       </SiteHeader>
       <LiveRefresh sessionId={sessionId} />
       <main className="mx-auto max-w-6xl px-4 pt-4 pb-16 sm:pt-6">{children}</main>
+      <SiteFooter />
     </>
   );
 }
