@@ -1,3 +1,4 @@
+import { Lock } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { Board } from '@/components/board/Board';
 import { JoinPanel } from '@/components/board/JoinPanel';
@@ -22,8 +23,13 @@ export default async function BoardPage({ params }: { params: Promise<{ sessionI
   const myGroup = groups.find((g) => g.id === myGroupId);
 
   return (
-    <div className="space-y-6">
-      {!open && <p className="rounded-lg bg-slate-200 px-4 py-3 text-sm">{t(lang, 'closed')}</p>}
+    <div className="space-y-5">
+      {!open && (
+        <p className="flex items-center gap-2 rounded-xl border bg-secondary px-4 py-3 text-sm text-secondary-foreground">
+          <Lock className="size-4 shrink-0" />
+          {t(lang, 'closed')}
+        </p>
+      )}
       {open && !joined && <JoinPanel lang={lang} sessionId={sessionId} groups={groups} />}
       <Board
         lang={lang}

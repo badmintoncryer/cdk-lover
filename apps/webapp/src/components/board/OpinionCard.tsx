@@ -1,13 +1,16 @@
 'use client';
 
+import { Languages, Pencil, ThumbsUp, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useOptimistic, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { deleteOpinion, toggleVote, updateOpinion } from '@/app/actions';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/input';
 import type { OpinionView } from '@/lib/data';
 import { CATEGORIES, categoryLabel, t, type Category, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { CATEGORY_STYLE } from './categories';
+import { CATEGORY_SELECTED, CATEGORY_STYLE } from './categories';
 
 export function displayText(o: Pick<OpinionView, 'body' | 'bodyEn' | 'bodyJa'>, lang: Lang) {
   return lang === 'ja' ? o.bodyJa : o.bodyEn;
@@ -30,6 +33,9 @@ export function OpinionCard({
   const [body, setBody] = useState(o.body);
   const [category, setCategory] = useState<Category>(o.category as Category);
   const [pending, start] = useTransition();
+  const [voting, startVote] = useTransition();
+  // +1 is the most frequent tap in the room; reflect it before the round trip on venue Wi-Fi.
+  const [vote, setVote] = useOptimistic({ voted: o.votedByMe, count: o.votes });
   const translated = o.sourceLang !== lang;
   const text = showOriginal ? o.body : displayText(o, lang);
 
@@ -40,43 +46,54 @@ export function OpinionCard({
       router.refresh();
     });
 
+  const onVote = () =>
+    startVote(async () => {
+      setVote((v) => ({ voted: !v.voted, count: v.count + (v.voted ? -1 : 1) }));
+      const res = await toggleVote(sessionId, o.id);
+      if (!res.ok) toast.error(t(lang, 'error'));
+      router.refresh();
+    });
+
   return (
     <article
       className={cn(
-        'rounded-xl border-2 p-3 flex flex-col gap-2 shadow-sm',
+        'flex flex-col gap-2 rounded-xl border border-t-4 p-3.5 shadow-sm transition',
         CATEGORY_STYLE[o.category],
+        o.mine && 'ring-2 ring-slate-900/10',
         pending && 'opacity-60',
       )}
     >
-      <div className="flex items-center gap-2 text-xs text-slate-600">
+      <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-600">
         <span className="font-semibold">{categoryLabel(lang, o.category)}</span>
-        <span className="rounded bg-white/70 px-1.5">{o.groupName}</span>
-        {o.mine && <span className="rounded bg-slate-900 px-1.5 text-white">me</span>}
+        <span className="rounded-full bg-white/80 px-2 py-0.5 font-medium">{o.groupName}</span>
+        {o.mine && (
+          <span className="rounded-full bg-slate-900 px-2 py-0.5 font-medium text-white">{t(lang, 'me')}</span>
+        )}
       </div>
 
       {editing ? (
         <div className="space-y-2">
-          <select
-            className="rounded border px-2 py-1 text-sm bg-white"
-            value={category}
-            onChange={(e) => setCategory(e.target.value as Category)}
-          >
+          <div className="grid grid-cols-2 gap-1.5">
             {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
+              <button
+                type="button"
+                key={c}
+                onClick={() => setCategory(c)}
+                className={cn(
+                  'rounded-md border px-2 py-1 text-xs font-medium',
+                  category === c ? CATEGORY_SELECTED[c] : 'bg-white',
+                )}
+              >
                 {categoryLabel(lang, c)}
-              </option>
+              </button>
             ))}
-          </select>
-          <textarea
-            className="w-full rounded border px-2 py-1 text-sm"
-            rows={3}
-            maxLength={400}
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-          />
-          <div className="flex gap-2 text-xs">
-            <button
-              className="rounded bg-slate-900 px-3 py-1 text-white"
+          </div>
+          <Textarea rows={3} maxLength={400} value={body} onChange={(e) => setBody(e.target.value)} />
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="dark"
+              disabled={pending || !body.trim()}
               onClick={() =>
                 run(async () => {
                   const r = await updateOpinion({ sessionId, opinionId: o.id, category, body });
@@ -86,43 +103,72 @@ export function OpinionCard({
               }
             >
               {t(lang, 'save')}
-            </button>
-            <button className="rounded border px-3 py-1" onClick={() => setEditing(false)}>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setBody(o.body);
+                setCategory(o.category as Category);
+                setEditing(false);
+              }}
+            >
               {t(lang, 'cancel')}
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
-        <p className="whitespace-pre-wrap break-words leading-relaxed">{text}</p>
+        <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed text-slate-900">{text}</p>
       )}
 
-      <div className="mt-auto flex items-center gap-2 text-xs">
+      <div className="mt-auto flex items-center gap-1 pt-1">
         <button
-          disabled={!canVote || pending}
-          onClick={() => run(() => toggleVote(sessionId, o.id))}
+          type="button"
+          disabled={!canVote}
+          onClick={onVote}
+          aria-pressed={vote.voted}
           className={cn(
-            'rounded-full border px-3 py-1 font-semibold',
-            o.votedByMe ? 'bg-orange-500 border-orange-500 text-white' : 'bg-white',
-            !canVote && 'cursor-default',
+            'inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold transition active:scale-95',
+            vote.voted
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-slate-300/80 bg-white text-slate-700 hover:border-primary hover:text-primary',
+            !canVote && 'cursor-default opacity-80 hover:border-slate-300/80 hover:text-slate-700',
+            voting && 'animate-pulse',
           )}
         >
-          👍 +1 <span className="ml-1 tabular-nums">{o.votes}</span>
+          <ThumbsUp className="size-3.5" />
+          <span className="tabular-nums">{vote.count}</span>
         </button>
-        {translated && (
-          <button className="text-slate-500 underline" onClick={() => setShowOriginal((v) => !v)}>
-            {showOriginal ? t(lang, 'showTranslation') : t(lang, 'showOriginal')}
+        {translated && !editing && (
+          <button
+            type="button"
+            className="inline-flex h-8 items-center gap-1 rounded-full px-2 text-xs text-slate-500 hover:bg-white/70 hover:text-slate-800"
+            onClick={() => setShowOriginal((v) => !v)}
+            title={showOriginal ? t(lang, 'showTranslation') : t(lang, 'showOriginal')}
+          >
+            <Languages className="size-3.5" />
+            {showOriginal ? t(lang, 'showTranslation') : `${t(lang, 'autoTranslated')} · ${t(lang, 'showOriginal')}`}
           </button>
         )}
         {o.mine && !editing && (
-          <span className="ml-auto flex gap-2">
-            <button className="text-slate-600 underline" onClick={() => setEditing(true)}>
-              {t(lang, 'edit')}
+          <span className="ml-auto flex">
+            <button
+              type="button"
+              aria-label={t(lang, 'edit')}
+              title={t(lang, 'edit')}
+              className="grid size-8 place-items-center rounded-full text-slate-500 hover:bg-white/80 hover:text-slate-900"
+              onClick={() => setEditing(true)}
+            >
+              <Pencil className="size-4" />
             </button>
             <button
-              className="text-rose-600 underline"
+              type="button"
+              aria-label={t(lang, 'delete')}
+              title={t(lang, 'delete')}
+              className="grid size-8 place-items-center rounded-full text-slate-500 hover:bg-white/80 hover:text-rose-600"
               onClick={() => confirm(t(lang, 'confirmDelete')) && run(() => deleteOpinion(sessionId, o.id))}
             >
-              {t(lang, 'delete')}
+              <Trash2 className="size-4" />
             </button>
           </span>
         )}

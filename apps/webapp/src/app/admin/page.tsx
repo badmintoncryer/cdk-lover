@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { AdminLogin } from '@/components/admin/AdminLogin';
 import { SessionForm } from '@/components/admin/SessionForm';
+import { Logo } from '@/components/SiteHeader';
 import { listSessions } from '@/lib/data';
 import { isAdmin } from '@/lib/identity';
 import { adminLogout } from './actions';
@@ -19,7 +20,9 @@ export default async function AdminPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-8 space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">CDK Lover admin</h1>
+        <h1 className="text-2xl">
+          <Logo /> <span className="text-base font-medium text-muted-foreground">admin</span>
+        </h1>
         <form action={adminLogout}>
           <button className="text-sm underline">Log out</button>
         </form>
@@ -27,13 +30,14 @@ export default async function AdminPage() {
       <section className="space-y-2">
         <h2 className="font-semibold">Sessions</h2>
         {sessions.length === 0 && <p className="text-sm text-slate-500">No sessions yet. Create one below.</p>}
-        <ul className="divide-y rounded-xl border bg-white">
+        <ul className="divide-y rounded-2xl border bg-card shadow-sm">
           {sessions.map((s) => (
             <li key={s.id} className="flex items-center justify-between px-4 py-3">
               <div>
                 <div className="font-medium">{s.title}</div>
-                <div className="text-xs text-slate-500">
-                  /s/{s.id} · {s.status}
+                <div className="text-xs text-muted-foreground">
+                  /s/{s.id} ·{' '}
+                  <span className={s.status === 'open' ? 'font-semibold text-emerald-700' : ''}>{s.status}</span>
                 </div>
               </div>
               <Link href={`/admin/${s.id}`} className="rounded-lg bg-slate-900 px-3 py-1 text-sm text-white">
