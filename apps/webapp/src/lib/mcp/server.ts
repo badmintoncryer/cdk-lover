@@ -404,7 +404,7 @@ function registerAdminTools(server: McpServer) {
     'admin_run_summary',
     {
       title: 'Run the AI summary',
-      description: `Summarizes every post of a session with the summary model and shows it on the board and screen. Capped at ${admin.MAX_SUMMARIES_PER_SESSION} runs per session.`,
+      description: `Summarizes every post of a session with the summary model and shows it on the projector screen (and to attendees via get_session). Capped at ${admin.MAX_SUMMARIES_PER_SESSION} runs per session.`,
       inputSchema: sessionArg,
       annotations: { ...WRITE, openWorldHint: true },
     },

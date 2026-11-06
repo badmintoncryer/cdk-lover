@@ -52,7 +52,7 @@ export function AdminSessionPanel({ sessionId, groups, opinions, profiles, summa
               <button
                 disabled={pending}
                 className="text-rose-600"
-                onClick={() => run(() => deleteGroup(sessionId, g.id))}
+                onClick={() => confirm(`Delete group ${g.name}?`) && run(() => deleteGroup(sessionId, g.id))}
               >
                 ×
               </button>

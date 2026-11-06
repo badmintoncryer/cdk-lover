@@ -31,7 +31,9 @@ export default async function BoardPage({ params }: { params: Promise<{ sessionI
           {t(lang, 'closed')}
         </p>
       )}
-      {open && !joined && <JoinPanel lang={lang} sessionId={sessionId} groups={groups} />}
+      {/* Also when the group cookie is gone (e.g. the organizer deleted that group): without a group
+          the composer is hidden, so re-joining is the only way back to posting. */}
+      {open && (!joined || !myGroup) && <JoinPanel lang={lang} sessionId={sessionId} groups={groups} />}
       <Board
         lang={lang}
         sessionId={sessionId}

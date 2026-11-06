@@ -1,4 +1,4 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { BlockPublicAccess, Bucket, BucketEncryption, ObjectOwnership } from 'aws-cdk-lib/aws-s3';
 import { CfnBudget } from 'aws-cdk-lib/aws-budgets';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
@@ -72,6 +72,9 @@ export class MainStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
       objectOwnership: ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
+      // Request paths include attendees' MCP tokens (/api/mcp/<token>) and every line has a viewer
+      // IP; keep them only as long as the event needs them for troubleshooting.
+      lifecycleRules: [{ expiration: Duration.days(7) }],
     });
 
     const database = new Database(this, 'Database');

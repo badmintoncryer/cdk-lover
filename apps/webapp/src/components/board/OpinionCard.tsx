@@ -36,7 +36,8 @@ export function OpinionCard({
   const [voting, startVote] = useTransition();
   // +1 is the most frequent tap in the room; reflect it before the round trip on venue Wi-Fi.
   const [vote, setVote] = useOptimistic({ voted: o.votedByMe, count: o.votes });
-  const translated = o.sourceLang !== lang;
+  // A post saved untranslated (model error or budget exhausted) shows its original text: no label.
+  const translated = o.sourceLang !== lang && displayText(o, lang) !== o.body;
   const text = showOriginal ? o.body : displayText(o, lang);
 
   const run = (fn: () => Promise<{ ok: boolean }>) =>
