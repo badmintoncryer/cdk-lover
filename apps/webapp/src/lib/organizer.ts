@@ -3,7 +3,7 @@
  * Static rather than a Profile row so it survives "Delete everything" and every new session.
  */
 export const ORGANIZER = {
-  name: 'Kazuho Shinozuka',
+  name: 'Kazuho Cryer-Shinozuka',
   githubUrl: 'https://github.com/badmintoncryer',
   avatarUrl: 'https://github.com/badmintoncryer.png?size=160',
   intro: {
