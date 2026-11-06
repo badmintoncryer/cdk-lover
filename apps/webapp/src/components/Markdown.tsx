@@ -39,7 +39,7 @@ export function Markdown({ text, className }: { text: string; className?: string
     const h = line.match(/^(#{1,4})\s+(.*)$/);
     if (h) {
       blocks.push(
-        <h3 key={blocks.length} className="font-bold text-[1.1em] mt-4 first:mt-0">
+        <h3 key={blocks.length} className="font-semibold text-[1.1em] mt-4 first:mt-0">
           {inline(h[2])}
         </h3>,
       );

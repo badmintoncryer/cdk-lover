@@ -14,10 +14,10 @@ const dict = {
   screen: { ja: 'スクリーン', en: 'Screen' },
   sessions: { ja: 'セッション', en: 'Sessions' },
   noSessions: { ja: 'まだセッションがありません', en: 'No sessions yet' },
-  'cat.good': { ja: '好きなところ 👍', en: 'Love 👍' },
-  'cat.bad': { ja: 'つらみ 😣', en: 'Pain 😣' },
-  'cat.wish': { ja: 'こうしてほしい 🙏', en: 'Wish 🙏' },
-  'cat.other': { ja: 'その他・CDK に言いたいこと 💬', en: 'Anything else 💬' },
+  'cat.good': { ja: '好きなところ', en: 'Love' },
+  'cat.bad': { ja: 'つらみ', en: 'Pain' },
+  'cat.wish': { ja: 'こうしてほしい', en: 'Wish' },
+  'cat.other': { ja: 'その他・CDK に言いたいこと', en: 'Anything else' },
   joinTitle: { ja: '参加して意見を投稿しよう', en: 'Join to share your feedback' },
   joinHint: {
     ja: 'パスフレーズは会場でお知らせします。閲覧だけならそのままで OK。',
@@ -100,6 +100,7 @@ const dict = {
   fullscreen: { ja: '全画面', en: 'Fullscreen' },
   madeBy: { ja: 'Made by', en: 'Made by' },
   organizer: { ja: '主催者', en: 'Organizer' },
+  fresh: { ja: '新着', en: 'New' },
   noSummary: { ja: 'まだ AI まとめはありません', en: 'No summary yet' },
   mcpTitle: { ja: 'AI から使う (MCP)', en: 'Use from AI (MCP)' },
   mcpHint: {

@@ -49,9 +49,9 @@ export function McpPanel({ lang, sessionId }: { lang: Lang; sessionId: string })
   return (
     <Card className="space-y-3 p-4 sm:p-5">
       <div className="flex items-start gap-3">
-        <Bot className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+        <Bot className="mt-0.5 size-[18px] shrink-0 text-muted-foreground" strokeWidth={1.5} aria-hidden />
         <div>
-          <h2 className="font-bold leading-tight">{t(lang, 'mcpTitle')}</h2>
+          <h2 className="font-semibold leading-tight">{t(lang, 'mcpTitle')}</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">{t(lang, 'mcpHint')}</p>
         </div>
       </div>

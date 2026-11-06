@@ -1,6 +1,6 @@
 'use client';
 
-import { Github, Linkedin, Search } from 'lucide-react';
+import { Github, Linkedin, Search, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import type { ProfileView } from '@/lib/data';
@@ -8,13 +8,12 @@ import { t, type Lang } from '@/lib/i18n';
 import { ORGANIZER } from '@/lib/organizer';
 import { cn } from '@/lib/utils';
 
+// The four sticky-note tints, so a person's initials look like they belong to the board.
 const AVATAR_COLORS = [
-  'bg-orange-100 text-orange-800',
-  'bg-violet-100 text-violet-800',
-  'bg-emerald-100 text-emerald-800',
-  'bg-sky-100 text-sky-800',
-  'bg-rose-100 text-rose-800',
-  'bg-amber-100 text-amber-800',
+  'bg-emerald-50 text-emerald-800',
+  'bg-rose-50 text-rose-800',
+  'bg-amber-50 text-amber-800',
+  'bg-sky-50 text-sky-800',
 ];
 
 function initials(name: string) {
@@ -49,17 +48,7 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
-function SocialLink({
-  href,
-  label,
-  children,
-  className,
-}: {
-  href: string;
-  label: string;
-  children: React.ReactNode;
-  className: string;
-}) {
+function SocialLink({ href, label, children }: { href: string; label: string; children: React.ReactNode }) {
   return (
     <a
       href={href}
@@ -67,10 +56,7 @@ function SocialLink({
       rel="noopener noreferrer nofollow"
       aria-label={label}
       title={label}
-      className={cn(
-        'inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-white transition hover:opacity-90',
-        className,
-      )}
+      className="inline-flex h-8 items-center gap-1.5 rounded-md border bg-card px-2.5 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary hover:text-foreground [&_svg]:size-3.5 [&_svg]:text-muted-foreground"
     >
       {children}
     </a>
@@ -79,16 +65,8 @@ function SocialLink({
 
 export function OrganizerCard({ lang }: { lang: Lang }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-violet-950 p-5 text-white shadow-lg sm:p-6">
-      <div
-        className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-brand/30 blur-3xl"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -bottom-20 left-10 size-48 rounded-full bg-love/30 blur-3xl"
-        aria-hidden
-      />
-      <div className="relative flex items-center gap-4 sm:gap-5">
+    <div className="rounded-xl border bg-card p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)] sm:p-6">
+      <div className="flex items-center gap-4 sm:gap-5">
         {/* Plain img: next/image would need remotePatterns for one avatar. */}
         {/* oxlint-disable-next-line nextjs/no-img-element */}
         <img
@@ -96,32 +74,26 @@ export function OrganizerCard({ lang }: { lang: Lang }) {
           alt=""
           width={88}
           height={88}
-          className="size-18 shrink-0 rounded-full bg-white/10 ring-4 ring-brand/70 sm:size-22"
+          className="size-16 shrink-0 rounded-full bg-secondary sm:size-20"
         />
         <div className="min-w-0">
-          <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-0.5 text-xs font-bold tracking-wide text-white">
-            ★ {t(lang, 'organizer')}
-          </span>
-          <div className="mt-1.5 text-2xl font-black tracking-tight sm:text-3xl">{ORGANIZER.name}</div>
-          <p className="mt-1 text-sm text-slate-300">{ORGANIZER.intro[lang]}</p>
-          <div className="mt-3 flex flex-wrap gap-1.5">
+          <div className="text-xs font-medium text-brand-ink">{t(lang, 'organizer')}</div>
+          <div className="mt-1 text-xl font-semibold sm:text-2xl">{ORGANIZER.name}</div>
+          <p className="mt-0.5 text-sm text-muted-foreground">{ORGANIZER.intro[lang]}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
             {ORGANIZER.linkedinUrl && (
-              <SocialLink href={ORGANIZER.linkedinUrl} label="LinkedIn" className="bg-[#0a66c2]">
+              <SocialLink href={ORGANIZER.linkedinUrl} label="LinkedIn">
                 <Linkedin className="size-3.5" />
                 LinkedIn
               </SocialLink>
             )}
             {ORGANIZER.xUrl && (
-              <SocialLink href={ORGANIZER.xUrl} label="X" className="bg-black ring-1 ring-white/20">
+              <SocialLink href={ORGANIZER.xUrl} label="X">
                 <XIcon className="size-3.5" />
                 {handleOf(ORGANIZER.xUrl) ? `@${handleOf(ORGANIZER.xUrl)}` : 'X'}
               </SocialLink>
             )}
-            <SocialLink
-              href={ORGANIZER.githubUrl}
-              label="GitHub"
-              className="bg-white text-slate-900! ring-1 ring-white/20"
-            >
+            <SocialLink href={ORGANIZER.githubUrl} label="GitHub">
               <Github className="size-3.5" />
               {handleOf(ORGANIZER.githubUrl)}
             </SocialLink>
@@ -144,8 +116,9 @@ export function PeopleList({ lang, people }: { lang: Lang; people: ProfileView[]
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3">
-        <h2 className="font-bold">
-          {t(lang, 'people')} <span className="text-muted-foreground tabular-nums">({people.length})</span>
+        <h2 className="font-semibold">
+          {t(lang, 'people')}{' '}
+          <span className="font-mono text-sm font-normal text-muted-foreground tabular-nums">{people.length}</span>
         </h2>
         {people.length > 6 && (
           <div className="relative ml-auto w-full max-w-60">
@@ -161,10 +134,8 @@ export function PeopleList({ lang, people }: { lang: Lang; people: ProfileView[]
         )}
       </div>
       {people.length === 0 ? (
-        <div className="rounded-2xl border border-dashed bg-card/60 px-6 py-12 text-center text-muted-foreground">
-          <div className="text-4xl" aria-hidden>
-            👥
-          </div>
+        <div className="rounded-xl border border-dashed bg-card/60 px-6 py-12 text-center text-muted-foreground">
+          <Users className="mx-auto size-6" strokeWidth={1.5} aria-hidden />
           <p className="mt-3">{t(lang, 'noProfiles')}</p>
         </div>
       ) : (
@@ -173,13 +144,13 @@ export function PeopleList({ lang, people }: { lang: Lang; people: ProfileView[]
             <li
               key={p.id}
               className={cn(
-                'flex gap-3 rounded-2xl border bg-card p-4 shadow-sm',
-                p.mine && 'border-primary/50 ring-1 ring-primary/20',
+                'flex gap-3 rounded-xl border bg-card p-4 shadow-[0_1px_2px_rgb(0_0_0/0.04)]',
+                p.mine && 'border-slate-900/30',
               )}
             >
               <span
                 className={cn(
-                  'grid size-11 shrink-0 place-items-center rounded-full text-sm font-bold',
+                  'grid size-10 shrink-0 place-items-center rounded-full text-sm font-medium',
                   colorFor(p.name),
                 )}
                 aria-hidden
@@ -188,30 +159,26 @@ export function PeopleList({ lang, people }: { lang: Lang; people: ProfileView[]
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="truncate font-semibold">{p.name}</span>
-                  {p.mine && (
-                    <span className="rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-medium text-white">
-                      {t(lang, 'me')}
-                    </span>
-                  )}
+                  <span className="truncate font-medium">{p.name}</span>
+                  {p.mine && <span className="text-xs text-muted-foreground">{t(lang, 'me')}</span>}
                 </div>
                 {p.intro && <p className="mt-0.5 break-words text-sm text-muted-foreground">{p.intro}</p>}
                 {(p.linkedinUrl || p.xUrl || p.githubUrl) && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
+                  <div className="mt-3 flex flex-wrap gap-2">
                     {p.linkedinUrl && (
-                      <SocialLink href={p.linkedinUrl} label="LinkedIn" className="bg-[#0a66c2]">
+                      <SocialLink href={p.linkedinUrl} label="LinkedIn">
                         <Linkedin className="size-3.5" />
                         LinkedIn
                       </SocialLink>
                     )}
                     {p.xUrl && (
-                      <SocialLink href={p.xUrl} label="X" className="bg-black">
+                      <SocialLink href={p.xUrl} label="X">
                         <XIcon className="size-3.5" />
                         {handleOf(p.xUrl) ? `@${handleOf(p.xUrl)}` : 'X'}
                       </SocialLink>
                     )}
                     {p.githubUrl && (
-                      <SocialLink href={p.githubUrl} label="GitHub" className="bg-slate-800">
+                      <SocialLink href={p.githubUrl} label="GitHub">
                         <Github className="size-3.5" />
                         {handleOf(p.githubUrl) ?? 'GitHub'}
                       </SocialLink>

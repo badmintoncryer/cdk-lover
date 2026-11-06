@@ -1,6 +1,6 @@
 'use client';
 
-import { Presentation, StickyNote, Users } from 'lucide-react';
+import { ArrowUpRight, Presentation, StickyNote, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -9,8 +9,8 @@ type Labels = { board: string; people: string; screen: string };
 
 const item = (active: boolean) =>
   cn(
-    'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors md:flex-none',
-    active ? 'bg-white text-slate-900' : 'text-slate-300 hover:bg-white/10 hover:text-white',
+    'flex h-8 flex-1 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition-colors md:flex-none',
+    active ? 'bg-white/12 text-white' : 'text-slate-400 hover:bg-white/6 hover:text-white',
   );
 
 export function SessionNav({ sessionId, labels }: { sessionId: string; labels: Labels }) {
@@ -31,7 +31,8 @@ export function SessionNav({ sessionId, labels }: { sessionId: string; labels: L
       {/* The projector view is for the presenter's laptop, not phones. */}
       <Link href={`${base}/screen`} target="_blank" className={cn(item(false), 'hidden md:flex')}>
         <Presentation className="size-4" />
-        {labels.screen} ↗
+        {labels.screen}
+        <ArrowUpRight className="-ml-1 size-3.5 opacity-60" aria-hidden />
       </Link>
     </nav>
   );

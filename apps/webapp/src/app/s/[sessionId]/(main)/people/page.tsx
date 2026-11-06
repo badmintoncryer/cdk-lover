@@ -29,7 +29,7 @@ export default async function PeoplePage({ params }: { params: Promise<{ session
           ) : (
             <Link
               href={`/s/${sessionId}`}
-              className="block rounded-2xl border border-dashed bg-card p-4 text-sm text-muted-foreground transition hover:border-primary hover:text-foreground"
+              className="block rounded-xl border border-dashed bg-card p-4 text-sm text-muted-foreground transition-colors hover:border-slate-400 hover:text-foreground"
             >
               {t(lang, 'joinToAddProfile')} →
             </Link>

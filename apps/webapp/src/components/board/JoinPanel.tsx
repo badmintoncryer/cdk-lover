@@ -44,14 +44,11 @@ export function JoinPanel({ lang, sessionId, groups }: { lang: Lang; sessionId: 
   };
 
   return (
-    <Card className="overflow-hidden border-primary/30">
+    <Card className="overflow-hidden">
       <form onSubmit={submit} className="space-y-4 p-4 sm:p-5">
-        <div className="flex items-start gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/10 text-xl" aria-hidden>
-            👋
-          </span>
+        <div>
           <div>
-            <h2 className="font-bold leading-tight">{t(lang, 'joinTitle')}</h2>
+            <h2 className="font-semibold leading-tight">{t(lang, 'joinTitle')}</h2>
             <p className="mt-0.5 text-sm text-muted-foreground">{t(lang, 'joinHint')}</p>
           </div>
         </div>
@@ -64,8 +61,8 @@ export function JoinPanel({ lang, sessionId, groups }: { lang: Lang; sessionId: 
               <label
                 key={g.id}
                 className={cn(
-                  'flex cursor-pointer items-center justify-between gap-2 rounded-lg border bg-card px-3 py-2.5 text-sm transition',
-                  groupId === g.id ? 'border-primary bg-primary/5 ring-2 ring-primary/30' : 'hover:bg-accent',
+                  'flex h-11 cursor-pointer items-center justify-between gap-2 rounded-lg border bg-card px-3 text-sm transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/40',
+                  groupId === g.id ? 'border-slate-900 bg-secondary' : 'hover:bg-secondary',
                 )}
               >
                 <input
@@ -76,7 +73,7 @@ export function JoinPanel({ lang, sessionId, groups }: { lang: Lang; sessionId: 
                   onChange={() => pick(g)}
                   className="sr-only"
                 />
-                <span className="font-semibold">{g.name}</span>
+                <span className="font-mono font-medium">{g.name}</span>
                 <span className="text-xs text-muted-foreground">{g.language === 'ja' ? '日本語' : 'English'}</span>
               </label>
             ))}

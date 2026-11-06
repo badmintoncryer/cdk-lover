@@ -7,21 +7,21 @@ import { JoinQr } from '@/components/JoinQr';
 import { LiveRefresh } from '@/components/LiveRefresh';
 import { Markdown } from '@/components/Markdown';
 import { Logo } from '@/components/SiteHeader';
-import { CATEGORY_CHIP, CATEGORY_STYLE } from '@/components/board/categories';
+import { CATEGORY_STYLE, CategoryDot } from '@/components/board/categories';
 import { getSession, listGroups, listOpinions } from '@/lib/data';
 import { CATEGORIES, categoryLabel, isLang, t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
-/** Notes younger than this get a NEW badge so the room notices fresh posts. */
+/** Notes younger than this are marked new so the room notices fresh posts. */
 const NEW_MS = 2 * 60_000;
 const isFresh = (createdAt: string) => Date.now() - new Date(createdAt).getTime() < NEW_MS;
 
 const tab = (active: boolean) =>
   cn(
-    'rounded-full px-3 py-1 transition-colors',
-    active ? 'bg-white text-slate-900' : 'text-slate-400 hover:bg-white/10 hover:text-white',
+    'inline-flex h-8 items-center rounded-md px-3 transition-colors',
+    active ? 'bg-white/12 text-white' : 'text-slate-400 hover:bg-white/6 hover:text-white',
   );
 
 /** Projector view for the room and the CDK team. Defaults to English. */
@@ -50,23 +50,23 @@ export default async function ScreenPage({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-white xl:h-screen">
+    <div className="flex min-h-screen flex-col bg-[#0f1013] text-slate-100 xl:h-screen">
       <LiveRefresh sessionId={sessionId} pollMs={8_000} />
       <header className="flex flex-wrap items-center gap-x-8 gap-y-3 px-6 pt-5 pb-3">
         <div>
           <h1 className="text-4xl leading-none">
             <Logo />
           </h1>
-          <p className="mt-2 text-lg font-medium text-slate-400">{session.title}</p>
-          <Credit className="mt-1 text-sm text-slate-400" />
+          <p className="mt-2 text-lg text-slate-400">{session.title}</p>
+          <Credit className="mt-1 text-sm text-slate-500" />
         </div>
         <dl className="flex gap-6">
           <Stat label={t(lang, 'statNotes')} value={filtered.length} />
           <Stat label={t(lang, 'statVotes')} value={totalVotes} />
         </dl>
-        <div className="ml-auto flex items-center gap-4 rounded-2xl bg-white/5 py-2 pr-2 pl-5 ring-1 ring-white/10">
+        <div className="ml-auto flex items-center gap-4 rounded-2xl bg-white/[0.04] py-2 pr-2 pl-5 ring-1 ring-white/8">
           <div className="text-right">
-            <div className="text-xl font-bold">{t(lang, 'scanToJoin')}</div>
+            <div className="text-xl font-medium">{t(lang, 'scanToJoin')}</div>
             <div className="text-sm text-slate-400">
               {lang === 'ja' ? 'スマホから意見を投稿・+1 しよう' : 'Share feedback & +1 from your phone'}
             </div>
@@ -85,14 +85,14 @@ export default async function ScreenPage({
           <Users className="size-4" />
           {t(lang, 'people')}
         </Link>
-        <span className="mx-2 h-4 border-l border-white/20" />
+        <span className="mx-2 h-4 border-l border-white/15" />
         <Link className={tab(view === 'notes')} href={q({ view: 'notes' })}>
           {t(lang, 'statNotes')}
         </Link>
         <Link className={tab(view === 'summary')} href={q({ view: 'summary' })}>
-          ✨ {t(lang, 'summary')}
+          {t(lang, 'summary')}
         </Link>
-        <span className="mx-2 h-4 border-l border-white/20" />
+        <span className="mx-2 h-4 border-l border-white/15" />
         <Link className={tab(!sp.group)} href={q({ group: undefined })}>
           {t(lang, 'allGroups')}
         </Link>
@@ -101,7 +101,7 @@ export default async function ScreenPage({
             {g.name}
           </Link>
         ))}
-        <span className="mx-2 h-4 border-l border-white/20" />
+        <span className="mx-2 h-4 border-l border-white/15" />
         <Link className={tab(lang === 'en')} href={q({ lang: 'en' })}>
           EN
         </Link>
@@ -114,7 +114,7 @@ export default async function ScreenPage({
       {view === 'summary' ? (
         <main className="min-h-0 flex-1 overflow-y-auto px-6 pb-8">
           {summary ? (
-            <div className="mx-auto max-w-5xl rounded-3xl bg-white p-10 text-2xl leading-relaxed text-slate-900 shadow-2xl">
+            <div className="mx-auto max-w-5xl rounded-2xl bg-white p-10 text-2xl leading-relaxed text-slate-900">
               <Markdown text={summary} className="space-y-4" />
             </div>
           ) : (
@@ -126,15 +126,11 @@ export default async function ScreenPage({
           {CATEGORIES.map((c) => {
             const items = filtered.filter((o) => o.category === c).sort((a, b) => b.votes - a.votes);
             return (
-              <section key={c} className="flex min-h-0 flex-col rounded-2xl bg-white/[0.04] ring-1 ring-white/10">
-                <h2
-                  className={cn(
-                    'flex items-center justify-between rounded-t-2xl px-4 py-2.5 text-2xl font-bold',
-                    CATEGORY_CHIP[c],
-                  )}
-                >
+              <section key={c} className="flex min-h-0 flex-col rounded-2xl bg-white/[0.03] ring-1 ring-white/8">
+                <h2 className="flex items-center gap-3 px-4 pt-4 pb-1 text-2xl font-medium">
+                  <CategoryDot category={c} className="size-3" />
                   {categoryLabel(lang, c)}
-                  <span className="rounded-full bg-black/20 px-2.5 text-lg tabular-nums">{items.length}</span>
+                  <span className="ml-auto font-mono text-lg text-slate-500 tabular-nums">{items.length}</span>
                 </h2>
                 <div className="no-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
                   {items.length === 0 && <p className="py-8 text-center text-lg text-slate-600">—</p>}
@@ -143,22 +139,18 @@ export default async function ScreenPage({
                     return (
                       <article
                         key={o.id}
-                        className={cn('rounded-xl border border-t-4 p-4 text-slate-900 shadow-md', CATEGORY_STYLE[c])}
-                        style={fresh ? { animation: 'note-in 1.6s ease-out 3' } : undefined}
+                        className={cn('rounded-xl border border-t-4 p-4 text-slate-900', CATEGORY_STYLE[c])}
+                        style={fresh ? { animation: 'note-in 400ms cubic-bezier(0.22, 1, 0.36, 1)' } : undefined}
                       >
-                        <p className="text-[clamp(1.05rem,1.15vw,1.6rem)] leading-snug font-medium whitespace-pre-wrap break-words">
+                        <p className="text-[clamp(1.05rem,1.15vw,1.6rem)] leading-snug whitespace-pre-wrap break-words">
                           {lang === 'ja' ? o.bodyJa : o.bodyEn}
                         </p>
                         <div className="mt-3 flex items-center gap-2 text-sm text-slate-600">
-                          <span className="rounded-full bg-white/80 px-2 py-0.5 font-medium">{o.groupName}</span>
-                          {fresh && (
-                            <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-white">
-                              NEW
-                            </span>
-                          )}
+                          <span className="font-mono text-slate-500">{o.groupName}</span>
+                          {fresh && <span className="font-medium text-brand-ink">{t(lang, 'fresh')}</span>}
                           {o.votes > 0 && (
-                            <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-0.5 text-base font-bold text-white tabular-nums">
-                              <ThumbsUp className="size-4" />
+                            <span className="ml-auto inline-flex items-center gap-1.5 text-lg font-medium text-slate-800 tabular-nums">
+                              <ThumbsUp className="size-4 text-slate-500" />
                               {o.votes}
                             </span>
                           )}
@@ -179,8 +171,8 @@ export default async function ScreenPage({
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex flex-col-reverse">
-      <dt className="mt-1 text-sm uppercase tracking-wider text-slate-400">{label}</dt>
-      <dd className="text-4xl font-black tabular-nums leading-none">{value}</dd>
+      <dt className="mt-1 text-sm text-slate-400">{label}</dt>
+      <dd className="text-4xl font-medium tabular-nums leading-none">{value}</dd>
     </div>
   );
 }

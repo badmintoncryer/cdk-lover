@@ -75,14 +75,14 @@ export function ProfileForm({ lang, sessionId, profile }: { lang: Lang; sessionI
         aria-expanded={open}
         className="flex w-full items-center gap-3 p-4 text-left"
       >
-        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-          <UserRound className="size-5" />
+        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-secondary text-muted-foreground">
+          <UserRound className="size-[18px]" strokeWidth={1.5} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-bold">{profile ? t(lang, 'editProfile') : t(lang, 'addProfile')}</span>
+          <span className="block font-semibold">{profile ? t(lang, 'editProfile') : t(lang, 'addProfile')}</span>
           {!open && profile && <span className="block truncate text-sm text-muted-foreground">{profile.name}</span>}
         </span>
-        <ChevronDown className={cn('size-5 text-muted-foreground transition', open && 'rotate-180')} />
+        <ChevronDown className={cn('size-5 text-muted-foreground transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <form onSubmit={submit} className="space-y-3 border-t px-4 pt-3 pb-4">
