@@ -1,9 +1,14 @@
 import type { NextConfig } from 'next';
 
-const allowedOrigins = ['localhost:3000'];
-if (process.env.ALLOWED_ORIGIN_HOST) {
-  allowedOrigins.push(process.env.ALLOWED_ORIGIN_HOST);
-}
+// Hosts allowed to call Server Actions (comma-separated). The Lambda sees the Function URL as its
+// Host, so the browser-facing hosts (CloudFront and the custom domain) must be listed here.
+const allowedOrigins = [
+  'localhost:3000',
+  ...(process.env.ALLOWED_ORIGIN_HOST ?? '')
+    .split(',')
+    .map((host) => host.trim())
+    .filter(Boolean),
+];
 
 const nextConfig: NextConfig = {
   output: 'standalone',

@@ -71,4 +71,41 @@ describe('CDK Lover stack', () => {
     expect(Object.keys(template.findResources('AWS::Budgets::Budget'))).toHaveLength(0);
     expect(Object.keys(synth('host@example.com').findResources('AWS::Budgets::Budget'))).toHaveLength(1);
   });
+
+  test('custom domain: us-east-1 certificate, A/AAAA aliases and the Server Actions origin', () => {
+    const app = new cdk.App();
+    const customDomain = { domainName: 'cdk-lover.example.com', hostedZoneId: 'Z0123456789ABCDEFGHIJ' };
+    const virginia = new UsEast1Stack(app, 'UsEast1Stack', {
+      env: { account: '123456789012', region: 'us-east-1' },
+      crossRegionReferences: true,
+      customDomain,
+    });
+    const main = new MainStack(app, 'MainStack', {
+      env: { account: '123456789012', region: 'us-west-2' },
+      crossRegionReferences: true,
+      signPayloadHandler: virginia.signPayloadHandler,
+      customDomain,
+      certificate: virginia.certificate,
+    });
+    Template.fromStack(virginia).hasResourceProperties('AWS::CertificateManager::Certificate', {
+      DomainName: 'cdk-lover.example.com',
+      ValidationMethod: 'DNS',
+    });
+    const t = Template.fromStack(main);
+    t.hasResourceProperties('AWS::CloudFront::Distribution', {
+      DistributionConfig: Match.objectLike({ Aliases: ['cdk-lover.example.com'] }),
+    });
+    for (const type of ['A', 'AAAA']) {
+      t.hasResourceProperties('AWS::Route53::RecordSet', {
+        Name: 'cdk-lover.example.com.',
+        Type: type,
+        HostedZoneId: 'Z0123456789ABCDEFGHIJ',
+      });
+    }
+    expect(JSON.stringify(t.toJSON())).toContain('*.cloudfront.net,cdk-lover.example.com');
+  });
+
+  test('no custom domain by default', () => {
+    expect(Object.keys(template.findResources('AWS::Route53::RecordSet'))).toHaveLength(0);
+  });
 });
