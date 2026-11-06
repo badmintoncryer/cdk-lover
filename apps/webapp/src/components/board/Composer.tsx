@@ -8,6 +8,7 @@ import { changeGroup, createOpinion, setLang } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/input';
+import { PublicNotice } from '@/components/PublicNotice';
 import type { GroupRow } from '@/lib/data';
 import { CATEGORIES, categoryLabel, isLang, t, type Category, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -62,7 +63,7 @@ export function Composer({
         <div className="flex items-center gap-2">
           <h2 className="font-bold">{t(lang, 'newNote')}</h2>
           <label className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
-            {t(lang, 'yourGroup')}
+            <span className="sr-only sm:not-sr-only">{t(lang, 'yourGroup')}</span>
             <select
               className="rounded-md border bg-card px-2 py-1 text-sm font-semibold text-foreground"
               value={myGroupId}
@@ -109,11 +110,10 @@ export function Composer({
           }}
         />
 
+        <PublicNotice>{t(lang, 'anonymousNote')}</PublicNotice>
+
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
-          <p className="text-xs text-muted-foreground">
-            🔒 {t(lang, 'anonymousNote')}
-            <span className="hidden sm:inline"> · {t(lang, 'sendHint')}</span>
-          </p>
+          <p className="hidden text-xs text-muted-foreground sm:block">{t(lang, 'sendHint')}</p>
           <span
             className={cn(
               'ml-auto hidden text-xs tabular-nums sm:inline',

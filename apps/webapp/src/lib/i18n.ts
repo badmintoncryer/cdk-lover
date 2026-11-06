@@ -23,6 +23,10 @@ const dict = {
     ja: 'パスフレーズは会場でお知らせします。閲覧だけならそのままで OK。',
     en: 'The passphrase is announced in the room. You can read without joining.',
   },
+  publicJoin: {
+    ja: 'このサイトに書いた意見とプロフィールは、すべて参加者全員に公開されます。意見はスクリーンで CDK チームにも表示されます。',
+    en: 'Everything you post here (feedback and profile) is public to all attendees. Feedback is also shown on the screen to the CDK team.',
+  },
   passphrase: { ja: 'パスフレーズ', en: 'Passphrase' },
   yourGroup: { ja: 'あなたのグループ', en: 'Your group' },
   join: { ja: '参加する', en: 'Join' },
@@ -50,13 +54,13 @@ const dict = {
   notes: { ja: '件', en: 'posts' },
   changeGroup: { ja: 'グループ変更', en: 'Change group' },
   anonymousNote: {
-    ja: '投稿は匿名で表示されます。',
-    en: 'Posts are shown anonymously.',
+    ja: '投稿は匿名ですが、内容は参加者全員に公開され、スクリーンで CDK チームにも表示されます。個人情報や社外秘は書かないでください。',
+    en: "Posts are anonymous, but what you write is public to everyone and shown on the screen to the CDK team. Don't include personal or confidential information.",
   },
   profileTitle: { ja: 'あなたのプロフィール', en: 'Your profile' },
   profileHint: {
-    ja: '入力した情報は参加者全員に公開され、イベント後数日で削除されます。すべて任意です。',
-    en: 'Visible to all attendees and deleted a few days after the event. Everything is optional.',
+    ja: '入力した内容はすべて参加者全員に公開されます（イベント後数日で削除）。すべて任意です。',
+    en: 'Everything you enter here is public to all attendees (deleted a few days after the event). All fields are optional.',
   },
   name: { ja: '名前', en: 'Name' },
   intro: { ja: 'ひとこと', en: 'One-line intro' },

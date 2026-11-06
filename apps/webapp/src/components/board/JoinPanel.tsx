@@ -8,6 +8,7 @@ import { joinSession, setLang } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { PublicNotice } from '@/components/PublicNotice';
 import type { GroupRow } from '@/lib/data';
 import { isLang, t, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -54,6 +55,7 @@ export function JoinPanel({ lang, sessionId, groups }: { lang: Lang; sessionId: 
             <p className="mt-0.5 text-sm text-muted-foreground">{t(lang, 'joinHint')}</p>
           </div>
         </div>
+        <PublicNotice>{t(lang, 'publicJoin')}</PublicNotice>
 
         <fieldset className="space-y-1.5">
           <legend className="mb-1.5 text-sm font-medium">{t(lang, 'yourGroup')}</legend>
