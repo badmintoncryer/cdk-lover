@@ -7,9 +7,9 @@ export const ORGANIZER = {
   githubUrl: 'https://github.com/badmintoncryer',
   avatarUrl: 'https://github.com/badmintoncryer.png?size=160',
   intro: {
-    ja: 'CDK Lover の主催者。このサイトも作りました 💜',
-    en: 'Host of CDK Lover, and the one who built this site 💜',
+    ja: 'CDK Lover の主催者 💜',
+    en: 'Host of CDK Lover 💜',
   },
-  linkedinUrl: undefined as string | undefined,
-  xUrl: undefined as string | undefined,
+  linkedinUrl: 'https://www.linkedin.com/in/cryershinozukakazuho/' as string | undefined,
+  xUrl: 'https://x.com/nixieminton' as string | undefined,
 };
