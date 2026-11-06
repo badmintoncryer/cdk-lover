@@ -12,10 +12,15 @@ export function LiveRefresh({ sessionId, pollMs = 10_000 }: { sessionId: string;
   const router = useRouter();
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  // Throttle, not debounce: a steady stream of +1s in the room would keep resetting a debounce and
+  // starve the board until the next poll. This refetches at most once per second during a burst,
+  // which also bounds the Lambda renders each open board causes.
   const refresh = useCallback(() => {
-    clearTimeout(timer.current);
-    // Coalesce bursts (e.g. many +1s at once) into one refetch.
-    timer.current = setTimeout(() => router.refresh(), 400);
+    if (timer.current) return;
+    timer.current = setTimeout(() => {
+      timer.current = undefined;
+      router.refresh();
+    }, 1000);
   }, [router]);
 
   useEventBus({ channelName: `public/session-${sessionId}`, onReceived: refresh });
