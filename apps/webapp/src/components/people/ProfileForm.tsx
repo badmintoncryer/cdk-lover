@@ -8,6 +8,7 @@ import { deleteProfile, saveProfile } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { PublicNotice } from '@/components/PublicNotice';
 import type { ProfileView } from '@/lib/data';
 import { t, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -85,7 +86,7 @@ export function ProfileForm({ lang, sessionId, profile }: { lang: Lang; sessionI
       </button>
       {open && (
         <form onSubmit={submit} className="space-y-3 border-t px-4 pt-3 pb-4">
-          <p className="text-xs text-muted-foreground">{t(lang, 'profileHint')}</p>
+          <PublicNotice>{t(lang, 'profileHint')}</PublicNotice>
           {field('name', t(lang, 'name'), { max: 60, required: true })}
           {field('intro', t(lang, 'intro'), { max: 160 })}
           {field('linkedin', 'LinkedIn', { placeholder: 'linkedin.com/in/…', url: true })}
