@@ -59,6 +59,19 @@ pnpm exec cdk deploy --all   # メインのスタックは us-west-2 固定（�
 pnpm exec cdk deploy --all -c translateModelId=<model or inference profile id> -c summaryModelId=<id>
 ```
 
+### カスタムドメイン
+
+`apps/cdk/cdk.json` の `domainName` と `hostedZoneId` で、サイトを独自ドメイン（現在は `https://cdk-lover.appnao.com`）で配信します。us-east-1 のスタックで ACM 証明書（DNS 検証）を発行し、メインのスタックで CloudFront に別名と Route 53 のエイリアスレコードを付けます。`*.cloudfront.net` の URL もそのまま使えます。
+
+ホストゾーンは `domainName` と同じ名前でデプロイ先アカウントに置きます。親ドメインが別アカウントにある場合は、先にゾーンを作って親ゾーンに NS レコードで委任してください（委任前にデプロイすると証明書の検証で止まります）。
+
+```bash
+AWS_PROFILE=<deploy> aws route53 create-hosted-zone --name cdk-lover.example.com --caller-reference $(date +%s)
+# 返ってきた 4 つの NS を、親ゾーン（example.com）に cdk-lover.example.com の NS レコードとして追加
+```
+
+独自ドメインなしでデプロイするときは `-c domainName= -c hostedZoneId=` を付けます。
+
 デプロイ後に一度だけやること:
 
 1. Bedrock コンソールで、使うモデルが呼び出せる状態か確認する（Nova はアカウントで有効化済みなら追加作業なし）。
@@ -94,10 +107,10 @@ IP が変わったら `scripts/allow-ip.sh` を実行し直してください。
 
 `/api/mcp` は MCP（Streamable HTTP、ステートレス）のエンドポイントです。webapp と同じ Lambda で動き、画面と同じロジック（`apps/webapp/src/lib/core/`）を呼ぶので、上限・翻訳・リアルタイム反映は画面と同じです。接続トークンの種類で使えるツールが変わります。
 
-| トークン | 入手方法                                                                     | ツール                                                                                                       |
-| -------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| 参加者   | ボードでパスフレーズを入れた後の「AI から使う (MCP)」→「接続 URL を発行」    | その回の意見の閲覧・投稿・編集・削除、+1、参加者一覧、自分のプロフィールの登録・削除                         |
-| 管理者   | デプロイ出力 `McpAdminTokenCommand` のコマンド（AWS の認証情報が必要）       | 管理画面の操作すべて（`admin_*`: 回の作成・編集、グループ、モデレーション、AI まとめ、レポート、回の削除） |
+| トークン | 入手方法                                                                  | ツール                                                                                                     |
+| -------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 参加者   | ボードでパスフレーズを入れた後の「AI から使う (MCP)」→「接続 URL を発行」 | その回の意見の閲覧・投稿・編集・削除、+1、参加者一覧、自分のプロフィールの登録・削除                       |
+| 管理者   | デプロイ出力 `McpAdminTokenCommand` のコマンド（AWS の認証情報が必要）    | 管理画面の操作すべて（`admin_*`: 回の作成・編集、グループ、モデレーション、AI まとめ、レポート、回の削除） |
 
 - 参加者トークンはブラウザと同じ匿名 ID として扱われるので、MCP で書いた意見を画面から編集でき、その逆もできます。有効期限は 14 日で、回のパスフレーズを変えるとその回のトークンはすべて無効になります。
 - 管理者トークンは Secrets Manager のシークレット `McpAdminToken` です。ローテートすると古いトークンは使えなくなります。
@@ -108,7 +121,7 @@ IP が変わったら `scripts/allow-ip.sh` を実行し直してください。
 
 ```bash
 TOKEN=$(aws secretsmanager get-secret-value --region us-west-2 --secret-id <McpAdminTokenCommand の secret-id> --query SecretString --output text)
-claude mcp add -s user --transport http cdk-lover-admin "https://<FrontendDomainName>/api/mcp/$TOKEN"
+claude mcp add -s user --transport http cdk-lover-admin "<FrontendDomainName>/api/mcp/$TOKEN"   # 例: https://cdk-lover.appnao.com/api/mcp/$TOKEN
 ```
 
 ## 撤去
@@ -118,7 +131,7 @@ cd apps/cdk
 pnpm exec cdk destroy --all
 ```
 
-DSQL クラスタ、シークレット、ログ、S3 バケットまで消えます。例外として、CloudFront の仕様上 Lambda@Edge の関数バージョンは数時間後に手動削除が必要です（us-east-1 の Lambda コンソールで名前に `SignPayloadHandler` を含む関数を削除）。データだけ先に消したいときは、管理画面の「Delete everything」で回ごとに削除できます。
+DSQL クラスタ、シークレット、ログ、S3 バケットまで消えます。カスタムドメインのホストゾーンと親ゾーンの NS レコードはスタックの外で作ったものなので残ります（ゾーンは月 $0.50）。例外として、CloudFront の仕様上 Lambda@Edge の関数バージョンは数時間後に手動削除が必要です（us-east-1 の Lambda コンソールで名前に `SignPayloadHandler` を含む関数を削除）。データだけ先に消したいときは、管理画面の「Delete everything」で回ごとに削除できます。
 
 ## ローカル開発
 

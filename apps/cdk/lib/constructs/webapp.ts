@@ -8,6 +8,8 @@ import { Construct } from 'constructs';
 import { CloudFrontLambdaFunctionUrlService } from './cf-lambda-furl-service/service';
 import { type FunctionAssociation, GeoRestriction } from 'aws-cdk-lib/aws-cloudfront';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { IHostedZone } from 'aws-cdk-lib/aws-route53';
+import { ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Database } from './database';
 import { EdgeFunction } from './cf-lambda-furl-service/edge-function';
 import { ContainerImageBuild } from '@cdklabs/deploy-time-build';
@@ -31,6 +33,9 @@ export interface WebappProps {
   geoRestriction?: GeoRestriction;
   functionAssociations?: FunctionAssociation[];
   enableIpv6?: boolean;
+  /** Serve at the apex of this zone (with `certificate`). */
+  hostedZone?: IHostedZone;
+  certificate?: ICertificate;
 }
 
 export class Webapp extends Construct {
@@ -50,7 +55,8 @@ export class Webapp extends Construct {
       tagPrefix: 'cdk-lover-',
       file: 'apps/webapp/Dockerfile',
       buildArgs: {
-        ALLOWED_ORIGIN_HOST: '*.cloudfront.net',
+        // Server Actions check the browser's Origin against these hosts.
+        ALLOWED_ORIGIN_HOST: ['*.cloudfront.net', ...(props.hostedZone ? [props.hostedZone.zoneName] : [])].join(','),
         SKIP_TS_BUILD: 'true',
         NEXT_PUBLIC_EVENT_HTTP_ENDPOINT: eventBus.httpEndpoint,
         NEXT_PUBLIC_EVENT_API_KEY: eventBus.apiKey,
@@ -106,6 +112,8 @@ export class Webapp extends Construct {
       geoRestriction: props.geoRestriction,
       functionAssociations: props.functionAssociations,
       enableIpv6: props.enableIpv6,
+      hostedZone: props.hostedZone,
+      certificate: props.certificate,
     });
     this.baseUrl = service.url;
   }

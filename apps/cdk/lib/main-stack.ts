@@ -3,6 +3,8 @@ import { BlockPublicAccess, Bucket, BucketEncryption, ObjectOwnership } from 'aw
 import { CfnBudget } from 'aws-cdk-lib/aws-budgets';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { GeoRestriction } from 'aws-cdk-lib/aws-cloudfront';
+import { ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
+import { HostedZone } from 'aws-cdk-lib/aws-route53';
 import { Construct } from 'constructs';
 import { Database } from './constructs/database';
 import { Webapp } from './constructs/webapp';
@@ -10,6 +12,7 @@ import { EdgeFunction } from './constructs/cf-lambda-furl-service/edge-function'
 import { EventBus } from './constructs/event-bus/';
 import { DsqlMigrator } from './constructs/dsql-migrator/';
 import { IpAllowlist } from './constructs/ip-allowlist';
+import type { CustomDomain } from './us-east-1-stack';
 
 interface MainStackProps extends StackProps {
   readonly signPayloadHandler: EdgeFunction;
@@ -56,6 +59,14 @@ interface MainStackProps extends StackProps {
    * @default false
    */
   readonly ipRestriction?: boolean;
+
+  /**
+   * Serve the site at this domain. `certificate` (from the us-east-1 stack) is required with it.
+   *
+   * @default CloudFront's default domain only
+   */
+  readonly customDomain?: CustomDomain;
+  readonly certificate?: ICertificate;
 }
 
 export class MainStack extends Stack {
@@ -97,6 +108,16 @@ export class MainStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
+    if (props.customDomain && !props.certificate) {
+      throw new Error('customDomain needs the us-east-1 certificate');
+    }
+    const hostedZone = props.customDomain
+      ? HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+          hostedZoneId: props.customDomain.hostedZoneId,
+          zoneName: props.customDomain.domainName,
+        })
+      : undefined;
+
     const allowlist = props.ipRestriction ? new IpAllowlist(this, 'IpAllowlist') : undefined;
 
     const webapp = new Webapp(this, 'Webapp', {
@@ -111,6 +132,8 @@ export class MainStack extends Stack {
       summaryModelId: props.summaryModelId ?? 'us.amazon.nova-pro-v1:0',
       webAclId: props.webAclId,
       geoRestriction: props.geoRestriction,
+      hostedZone,
+      certificate: props.certificate,
       // The allowlist matches IPv4 only, so viewers must not arrive over IPv6 while it is on.
       ...(allowlist ? { functionAssociations: [allowlist.association], enableIpv6: false } : {}),
     });

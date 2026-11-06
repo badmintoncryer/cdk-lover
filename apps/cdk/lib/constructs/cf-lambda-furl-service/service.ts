@@ -13,7 +13,7 @@ import {
 } from 'aws-cdk-lib/aws-cloudfront';
 import { FunctionUrlOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
-import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { AaaaRecord, ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -199,6 +199,13 @@ export class CloudFrontLambdaFunctionUrlService extends Construct {
         target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
         recordName: subDomain,
       });
+      if (enableIpv6 !== false) {
+        new AaaaRecord(this, 'AaaaRecord', {
+          zone: hostedZone,
+          target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+          recordName: subDomain,
+        });
+      }
     } else {
       domainName = distribution.domainName;
     }

@@ -29,11 +29,27 @@ const props = {
    * `scripts/allow-ip.sh` (blocked for everyone until it is first run).
    */
   ipRestriction: String(app.node.tryGetContext('ipRestriction') ?? 'true') !== 'false',
+  /**
+   * Custom domain (set in cdk.json). The hosted zone must be named exactly `domainName` and live
+   * in the deploy account; delegate it from the parent zone with NS records. `-c domainName=`
+   * (empty) deploys without it.
+   */
+  domainName: (app.node.tryGetContext('domainName') as string | undefined) || undefined,
+  hostedZoneId: (app.node.tryGetContext('hostedZoneId') as string | undefined) || undefined,
 };
+
+if (Boolean(props.domainName) !== Boolean(props.hostedZoneId)) {
+  throw new Error('Set both domainName and hostedZoneId (or neither)');
+}
+const customDomain =
+  props.domainName && props.hostedZoneId
+    ? { domainName: props.domainName, hostedZoneId: props.hostedZoneId }
+    : undefined;
 
 const virginia = new UsEast1Stack(app, 'CdkLoverUsEast1Stack', {
   env: { account: props.account, region: 'us-east-1' },
   crossRegionReferences: true,
+  customDomain,
 });
 
 new MainStack(app, 'CdkLoverStack', {
@@ -45,6 +61,8 @@ new MainStack(app, 'CdkLoverStack', {
   budgetEmail: props.budgetEmail,
   budgetUsd: props.budgetUsd,
   ipRestriction: props.ipRestriction,
+  customDomain,
+  certificate: virginia.certificate,
 });
 
 cdk.Tags.of(app).add('Application', 'CdkLover');
