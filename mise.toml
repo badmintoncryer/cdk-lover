@@ -1,0 +1,5 @@
+# mise を使う場合、このリポジトリでは package.json の packageManager と同じ pnpm を使う。
+# 新しいメジャー（pnpm 12 など）が入っていると ERR_PNPM_BAD_PM_VERSION で止まるため。
+[tools]
+node = "22"
+pnpm = "10.34.4"

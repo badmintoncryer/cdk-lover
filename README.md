@@ -37,6 +37,13 @@ AWS re:Invent のコミュニティセッション「CDK Lover」専用の Web �
 
 前提: Node.js 22+、pnpm 10、AWS CLI の認証、デプロイ先アカウントで `cdk bootstrap` 済み（us-east-1 と us-west-2 の両方）。
 
+pnpm は `package.json` の `packageManager` に書いた 10.34.4 を使います。別のメジャー（pnpm 12 など）が先に見つかると `ERR_PNPM_BAD_PM_VERSION` で止まるので、次のどれかで合わせてください。
+
+- mise: リポジトリ直下の `mise.toml` が pnpm 10.34.4 と Node.js 22 を指定しています。初回だけ `mise trust && mise install` を実行します。
+- corepack: `corepack enable && corepack prepare pnpm@10.34.4 --activate`
+
+`pnpm -v` が `10.34.4` を返せば準備完了です。`cdk.json` の app コマンドは pnpm を経由しない（`npx ts-node`）ので、`./node_modules/.bin/cdk` を直接呼んでも同じように動きます。
+
 ```bash
 pnpm install
 cd apps/cdk
