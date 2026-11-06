@@ -1,7 +1,7 @@
 'use client';
 
 import { Github, Linkedin, Search, Users } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import type { ProfileView } from '@/lib/data';
 import { t, type Lang } from '@/lib/i18n';
@@ -80,6 +80,17 @@ export function OrganizerCard({ lang }: { lang: Lang }) {
           <div className="text-xs font-medium text-brand-ink">{t(lang, 'organizer')}</div>
           <div className="mt-1 text-xl font-semibold sm:text-2xl">{ORGANIZER.name}</div>
           <p className="mt-0.5 text-sm text-muted-foreground">{ORGANIZER.intro[lang]}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {/* Wrap between titles, never inside one. */}
+            {ORGANIZER.credentials.split(' & ').map((title, i, all) => (
+              <Fragment key={title}>
+                <span className="min-[360px]:whitespace-nowrap">
+                  {title}
+                  {i < all.length - 1 && ' &'}
+                </span>{' '}
+              </Fragment>
+            ))}
+          </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {ORGANIZER.linkedinUrl && (
               <SocialLink href={ORGANIZER.linkedinUrl} label="LinkedIn">

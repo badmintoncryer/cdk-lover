@@ -10,6 +10,8 @@ export const ORGANIZER = {
     ja: 'CDK Lover の主催者',
     en: 'Host of CDK Lover',
   },
+  /** Second line under the intro; titles, so the same in both languages. */
+  credentials: 'AWS Hero & AWS CDK Top Contributor & Trusted Community Reviewer',
   linkedinUrl: 'https://www.linkedin.com/in/cryershinozukakazuho/' as string | undefined,
   xUrl: 'https://x.com/nixieminton' as string | undefined,
 };
