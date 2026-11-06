@@ -35,7 +35,7 @@ export default async function BoardPage({ params }: { params: Promise<{ sessionI
         lang={lang}
         sessionId={sessionId}
         canPost={open && joined && !!myGroup}
-        canVote={open && joined}
+        canVote={open}
         groups={groups}
         myGroupId={myGroup?.id}
         opinions={opinions}
