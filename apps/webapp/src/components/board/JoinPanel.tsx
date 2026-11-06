@@ -4,12 +4,12 @@ import { LogIn } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { joinSession } from '@/app/actions';
+import { joinSession, setLang } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import type { GroupRow } from '@/lib/data';
-import { t, type Lang } from '@/lib/i18n';
+import { isLang, t, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export function JoinPanel({ lang, sessionId, groups }: { lang: Lang; sessionId: string; groups: GroupRow[] }) {
@@ -18,6 +18,16 @@ export function JoinPanel({ lang, sessionId, groups }: { lang: Lang; sessionId: 
   // Preselect the first group in the reader's language; most rooms are split by language.
   const [groupId, setGroupId] = useState(groups.find((g) => g.language === lang)?.id ?? groups[0]?.id ?? '');
   const [pending, start] = useTransition();
+
+  // Groups are split by language, so picking one switches the UI to that language right away.
+  const pick = (g: GroupRow) => {
+    setGroupId(g.id);
+    if (isLang(g.language) && g.language !== lang)
+      start(async () => {
+        await setLang(g.language);
+        router.refresh();
+      });
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +71,7 @@ export function JoinPanel({ lang, sessionId, groups }: { lang: Lang; sessionId: 
                   name="group"
                   value={g.id}
                   checked={groupId === g.id}
-                  onChange={() => setGroupId(g.id)}
+                  onChange={() => pick(g)}
                   className="sr-only"
                 />
                 <span className="font-semibold">{g.name}</span>

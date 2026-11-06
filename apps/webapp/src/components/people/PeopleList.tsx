@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import type { ProfileView } from '@/lib/data';
 import { t, type Lang } from '@/lib/i18n';
+import { ORGANIZER } from '@/lib/organizer';
 import { cn } from '@/lib/utils';
 
 const AVATAR_COLORS = [
@@ -73,6 +74,61 @@ function SocialLink({
     >
       {children}
     </a>
+  );
+}
+
+export function OrganizerCard({ lang }: { lang: Lang }) {
+  return (
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-violet-950 p-5 text-white shadow-lg sm:p-6">
+      <div
+        className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-brand/30 blur-3xl"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -bottom-20 left-10 size-48 rounded-full bg-love/30 blur-3xl"
+        aria-hidden
+      />
+      <div className="relative flex items-center gap-4 sm:gap-5">
+        {/* Plain img: next/image would need remotePatterns for one avatar. */}
+        {/* oxlint-disable-next-line nextjs/no-img-element */}
+        <img
+          src={ORGANIZER.avatarUrl}
+          alt=""
+          width={88}
+          height={88}
+          className="size-18 shrink-0 rounded-full bg-white/10 ring-4 ring-brand/70 sm:size-22"
+        />
+        <div className="min-w-0">
+          <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-0.5 text-xs font-bold tracking-wide text-white">
+            ★ {t(lang, 'organizer')}
+          </span>
+          <div className="mt-1.5 text-2xl font-black tracking-tight sm:text-3xl">{ORGANIZER.name}</div>
+          <p className="mt-1 text-sm text-slate-300">{ORGANIZER.intro[lang]}</p>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {ORGANIZER.linkedinUrl && (
+              <SocialLink href={ORGANIZER.linkedinUrl} label="LinkedIn" className="bg-[#0a66c2]">
+                <Linkedin className="size-3.5" />
+                LinkedIn
+              </SocialLink>
+            )}
+            {ORGANIZER.xUrl && (
+              <SocialLink href={ORGANIZER.xUrl} label="X" className="bg-black ring-1 ring-white/20">
+                <XIcon className="size-3.5" />
+                {handleOf(ORGANIZER.xUrl) ? `@${handleOf(ORGANIZER.xUrl)}` : 'X'}
+              </SocialLink>
+            )}
+            <SocialLink
+              href={ORGANIZER.githubUrl}
+              label="GitHub"
+              className="bg-white text-slate-900! ring-1 ring-white/20"
+            >
+              <Github className="size-3.5" />
+              {handleOf(ORGANIZER.githubUrl)}
+            </SocialLink>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

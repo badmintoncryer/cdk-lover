@@ -4,12 +4,12 @@ import { Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { changeGroup, createOpinion } from '@/app/actions';
+import { changeGroup, createOpinion, setLang } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/input';
 import type { GroupRow } from '@/lib/data';
-import { CATEGORIES, categoryLabel, t, type Category, type Lang } from '@/lib/i18n';
+import { CATEGORIES, categoryLabel, isLang, t, type Category, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { CATEGORY_SELECTED } from './categories';
 
@@ -51,6 +51,8 @@ export function Composer({
   const onGroup = (groupId: string) =>
     start(async () => {
       await changeGroup(sessionId, groupId);
+      const language = groups.find((g) => g.id === groupId)?.language;
+      if (isLang(language) && language !== lang) await setLang(language);
       router.refresh();
     });
 

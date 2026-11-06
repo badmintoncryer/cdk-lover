@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { PeopleList } from '@/components/people/PeopleList';
+import { OrganizerCard, PeopleList } from '@/components/people/PeopleList';
 import { ProfileForm } from '@/components/people/ProfileForm';
 import { getSession, listProfiles } from '@/lib/data';
 import { getLang, isJoined, keyFor } from '@/lib/identity';
@@ -19,21 +19,24 @@ export default async function PeoplePage({ params }: { params: Promise<{ session
   const mine = people.find((p) => p.mine);
 
   return (
-    <div className="grid items-start gap-5 lg:grid-cols-[360px_1fr]">
-      <section className="lg:sticky lg:top-20">
-        {joined ? (
-          // Keyed so the form resets after the profile is saved or deleted elsewhere.
-          <ProfileForm key={mine?.id ?? 'new'} lang={lang} sessionId={sessionId} profile={mine} />
-        ) : (
-          <Link
-            href={`/s/${sessionId}`}
-            className="block rounded-2xl border border-dashed bg-card p-4 text-sm text-muted-foreground transition hover:border-primary hover:text-foreground"
-          >
-            {t(lang, 'joinToAddProfile')} →
-          </Link>
-        )}
-      </section>
-      <PeopleList lang={lang} people={people} />
+    <div className="space-y-5">
+      <OrganizerCard lang={lang} />
+      <div className="grid items-start gap-5 lg:grid-cols-[360px_1fr]">
+        <section className="lg:sticky lg:top-20">
+          {joined ? (
+            // Keyed so the form resets after the profile is saved or deleted elsewhere.
+            <ProfileForm key={mine?.id ?? 'new'} lang={lang} sessionId={sessionId} profile={mine} />
+          ) : (
+            <Link
+              href={`/s/${sessionId}`}
+              className="block rounded-2xl border border-dashed bg-card p-4 text-sm text-muted-foreground transition hover:border-primary hover:text-foreground"
+            >
+              {t(lang, 'joinToAddProfile')} →
+            </Link>
+          )}
+        </section>
+        <PeopleList lang={lang} people={people} />
+      </div>
     </div>
   );
 }
