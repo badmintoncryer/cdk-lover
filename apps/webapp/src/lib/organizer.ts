@@ -10,6 +10,6 @@ export const ORGANIZER = {
     ja: 'CDK Lover の主催者。このサイトも作りました 💜',
     en: 'Host of CDK Lover, and the one who built this site 💜',
   },
-  linkedinUrl: undefined as string | undefined,
-  xUrl: undefined as string | undefined,
+  linkedinUrl: 'https://www.linkedin.com/in/cryershinozukakazuho/' as string | undefined,
+  xUrl: 'https://x.com/nixieminton' as string | undefined,
 };
