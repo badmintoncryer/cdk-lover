@@ -34,8 +34,10 @@ cd apps/webapp && pnpm run dev
 ### Access model
 
 - No login for attendees. A random browser id (`cl_pid` cookie) is hashed per purpose with the signing key (`lib/crypto.ts` `purposeKey`) so opinions, votes and profiles cannot be linked to each other. Never store the raw id or join these keys.
-- Every attendee mutation in `app/actions.ts` must go through `requireJoined()`, which checks the per-session passphrase cookie. This is the AI cost guard: translation only runs behind it. The one exception is `toggleVote` (`requireVoter()`): +1 is open to anyone viewing an open session; never let it reach an AI call.
-- Admin mutations in `app/admin/actions.ts` and `/api/admin/*` must call `requireAdmin()` / `isAdmin()`.
+- Attendee and admin logic lives in `lib/core/participant.ts` / `lib/core/admin.ts`. They take the caller's identity as arguments and never read cookies, so both the browser (Server Actions) and the MCP endpoint call the same code. Cost guards (per-person / per-session caps, translation budget, open/closed checks) belong in `lib/core`, not in the callers.
+- Every attendee mutation in `app/actions.ts` must go through `requireJoined()`, which checks the per-session passphrase cookie. This is the AI cost guard: translation only runs behind it. The one exception is `toggleVote`: +1 is open to anyone viewing an open session; never let it reach an AI call.
+- Admin mutations in `app/admin/actions.ts` must go through `asAdmin()`, and `/api/admin/*` must call `isAdmin()`.
+- MCP (`app/api/mcp/[[...token]]/route.ts`, tools in `lib/mcp/server.ts`): a participant token (`lib/mcp-token.ts`, signed, bound to the session's passphrase hash) stands in for the passphrase cookie and carries the same anonymous browser id; the admin token is the `McpAdminToken` secret. Admin tools are registered only for the admin token, never listed for participants. `/api/mcp` stays behind the IP allowlist like every other path (claude.ai connectors therefore only work once the site is opened); it must still never answer without a valid token.
 
 ### Database
 

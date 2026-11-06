@@ -101,6 +101,20 @@ const dict = {
   madeBy: { ja: 'Made by', en: 'Made by' },
   organizer: { ja: '主催者', en: 'Organizer' },
   noSummary: { ja: 'まだ AI まとめはありません', en: 'No summary yet' },
+  mcpTitle: { ja: 'AI から使う (MCP)', en: 'Use from AI (MCP)' },
+  mcpHint: {
+    ja: 'Claude などの AI アシスタントから、意見の投稿・閲覧やプロフィール登録ができます。画面と同じあなたとして扱われます。',
+    en: 'Post and read feedback or update your profile from Claude or another AI assistant. It acts as you, same as this browser.',
+  },
+  mcpIssue: { ja: '接続 URL を発行', en: 'Get my connection URL' },
+  mcpUrl: { ja: 'コネクタ URL (claude.ai / Claude Desktop)', en: 'Connector URL (claude.ai / Claude Desktop)' },
+  mcpCli: { ja: 'Claude Code', en: 'Claude Code' },
+  mcpWarn: {
+    ja: 'この URL はあなた専用の鍵です。人に渡さないでください。14 日で失効します。',
+    en: 'This URL is your personal key. Do not share it. It expires in 14 days.',
+  },
+  copy: { ja: 'コピー', en: 'Copy' },
+  copied: { ja: 'コピーしました', en: 'Copied' },
   error: { ja: 'エラーが発生しました', en: 'Something went wrong' },
 } as const;
 

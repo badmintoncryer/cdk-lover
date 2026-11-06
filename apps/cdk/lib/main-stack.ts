@@ -87,6 +87,13 @@ export class MainStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
+    // Bearer token for the admin tools of the MCP endpoint (/api/mcp). Only readable with AWS
+    // credentials of this account; rotate it to revoke.
+    const mcpAdminToken = new Secret(this, 'McpAdminToken', {
+      generateSecretString: { passwordLength: 48, excludePunctuation: true },
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+
     const allowlist = props.ipRestriction ? new IpAllowlist(this, 'IpAllowlist') : undefined;
 
     const webapp = new Webapp(this, 'Webapp', {
@@ -96,6 +103,7 @@ export class MainStack extends Stack {
       eventBus,
       signingKey,
       adminPassword,
+      mcpAdminToken,
       translateModelId: props.translateModelId ?? 'us.amazon.nova-lite-v1:0',
       summaryModelId: props.summaryModelId ?? 'us.amazon.nova-pro-v1:0',
       webAclId: props.webAclId,
@@ -128,6 +136,9 @@ export class MainStack extends Stack {
     new CfnOutput(this, 'FrontendDomainName', { value: webapp.baseUrl });
     new CfnOutput(this, 'AdminPasswordCommand', {
       value: `aws secretsmanager get-secret-value --region ${this.region} --secret-id ${adminPassword.secretName} --query SecretString --output text`,
+    });
+    new CfnOutput(this, 'McpAdminTokenCommand', {
+      value: `aws secretsmanager get-secret-value --region ${this.region} --secret-id ${mcpAdminToken.secretName} --query SecretString --output text`,
     });
   }
 }
