@@ -95,7 +95,7 @@ IP が変わったら `scripts/allow-ip.sh` を実行し直してください。
 - 参加者トークンはブラウザと同じ匿名 ID として扱われるので、MCP で書いた意見を画面から編集でき、その逆もできます。有効期限は 14 日で、回のパスフレーズを変えるとその回のトークンはすべて無効になります。
 - 管理者トークンは Secrets Manager のシークレット `McpAdminToken` です。ローテートすると古いトークンは使えなくなります。
 - トークンは `Authorization: Bearer <token>` ヘッダーか、URL のパス `/api/mcp/<token>` で渡します（claude.ai / Claude Desktop のカスタムコネクタはヘッダーを設定できないのでパス形式）。
-- IP 制限中も `/api/mcp` だけは通します。claude.ai のコネクタは Anthropic のクラウドから接続してくるためです。トークンは IP 制限された画面か AWS からしか取れないので、事前に第三者が使える経路は増えません。
+- `/api/mcp` も IP 制限の対象です。claude.ai / Claude Desktop のカスタムコネクタは Anthropic のクラウドから接続してくるので、制限中は使えません。制限中に使えるのは、許可した IP の PC から接続する Claude Code だけです。`allow-ip.sh open` の後はどのクライアントからも使えます。
 
 管理者として Claude Code から使う例:
 

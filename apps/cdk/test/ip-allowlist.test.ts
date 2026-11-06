@@ -10,11 +10,8 @@ import { UsEast1Stack } from '../lib/us-east-1-stack';
 const src = readFileSync(join(__dirname, '../lib/constructs/ip-allowlist/viewer-request.js'), 'utf8')
   .replace(/^import .*$/m, '')
   .replace("const kvs = cf.kvs('__KVS_ID__');", '')
-  .replace(/export function /g, 'function ');
-const { matches, bypasses } = new Function(`${src}; return { matches, bypasses };`)() as {
-  matches: (ip: string, entry: string) => boolean;
-  bypasses: (uri: string) => boolean;
-};
+  .replace('export function matches', 'function matches');
+const matches = new Function(`${src}; return matches;`)() as (ip: string, entry: string) => boolean;
 
 describe('IP allowlist matcher', () => {
   // Tests run on Node, which accepts syntax the CloudFront runtime rejects at deploy time.
@@ -35,17 +32,6 @@ describe('IP allowlist matcher', () => {
     ['1.2.3.4', '1.2.3.4/33', false],
   ])('%s vs %s → %s', (ip, entry, expected) => {
     expect(matches(ip, entry)).toBe(expected);
-  });
-
-  test.each([
-    ['/api/mcp', true],
-    ['/api/mcp/p1.1130.x.1.sig', true],
-    ['/api/mcpx', false],
-    ['/api/admin/export/1130', false],
-    ['/s/1130', false],
-    ['/', false],
-  ])('MCP endpoint bypass: %s → %s', (uri, expected) => {
-    expect(bypasses(uri)).toBe(expected);
   });
 });
 

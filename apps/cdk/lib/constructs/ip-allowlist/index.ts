@@ -30,7 +30,7 @@ export class IpAllowlist extends Construct {
 
     const source = readFileSync(join(__dirname, 'viewer-request.js'), 'utf8')
       // `export` is only there for unit tests; CloudFront Functions do not allow it.
-      .replace(/export function /g, 'function ')
+      .replace('export function matches', 'function matches')
       .replace('__KVS_ID__', this.store.keyValueStoreId);
 
     const fn = new CfFunction(this, 'Function', {
