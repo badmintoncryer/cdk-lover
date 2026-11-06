@@ -24,11 +24,9 @@ export default async function Home() {
           <p className="mx-auto mt-4 max-w-xl text-balance text-muted-foreground sm:text-lg">{t(lang, 'tagline')}</p>
           <p className="mt-2 text-xs text-muted-foreground">AWS re:Invent · Community session</p>
         </section>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t(lang, 'sessions')}
-        </h2>
+        <h2 className="mb-3 text-sm font-medium text-muted-foreground">{t(lang, 'sessions')}</h2>
         {sorted.length === 0 ? (
-          <p className="rounded-2xl border border-dashed bg-card p-8 text-center text-muted-foreground">
+          <p className="rounded-xl border border-dashed bg-card p-8 text-center text-muted-foreground">
             {t(lang, 'noSessions')}
           </p>
         ) : (
@@ -40,28 +38,22 @@ export default async function Home() {
                   <Link
                     href={`/s/${s.id}`}
                     className={cn(
-                      'group flex items-center gap-3 rounded-2xl border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
-                      open && 'border-primary/40 ring-1 ring-primary/20',
+                      'group flex items-center gap-3 rounded-xl border bg-card p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)] transition-colors hover:border-slate-300',
                     )}
                   >
                     <div className="min-w-0 flex-1">
                       <span
                         className={cn(
-                          'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium',
-                          open ? 'bg-emerald-100 text-emerald-800' : 'bg-secondary text-muted-foreground',
+                          'inline-flex items-center gap-1.5 text-xs font-medium',
+                          open ? 'text-emerald-700' : 'text-muted-foreground',
                         )}
                       >
-                        <span
-                          className={cn(
-                            'size-1.5 rounded-full',
-                            open ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400',
-                          )}
-                        />
+                        <span className={cn('size-1.5 rounded-full', open ? 'bg-emerald-500' : 'bg-slate-400')} />
                         {open ? t(lang, 'open') : t(lang, 'closedShort')}
                       </span>
-                      <div className="mt-2 truncate font-semibold">{s.title}</div>
+                      <div className="mt-2 truncate font-medium">{s.title}</div>
                     </div>
-                    <ArrowRight className="size-5 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                    <ArrowRight className="size-5 shrink-0 text-muted-foreground transition-[color,transform] group-hover:translate-x-0.5 group-hover:text-foreground" />
                   </Link>
                 </li>
               );

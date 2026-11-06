@@ -7,8 +7,8 @@ export const ORGANIZER = {
   githubUrl: 'https://github.com/badmintoncryer',
   avatarUrl: 'https://github.com/badmintoncryer.png?size=160',
   intro: {
-    ja: 'CDK Lover の主催者 💜',
-    en: 'Host of CDK Lover 💜',
+    ja: 'CDK Lover の主催者',
+    en: 'Host of CDK Lover',
   },
   linkedinUrl: 'https://www.linkedin.com/in/cryershinozukakazuho/' as string | undefined,
   xUrl: 'https://x.com/nixieminton' as string | undefined,

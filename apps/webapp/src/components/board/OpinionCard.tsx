@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/input';
 import type { OpinionView } from '@/lib/data';
 import { CATEGORIES, categoryLabel, t, type Category, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { CATEGORY_SELECTED, CATEGORY_STYLE } from './categories';
+import { CATEGORY_SELECTED, CATEGORY_STYLE, CategoryDot } from './categories';
 
 export function displayText(o: Pick<OpinionView, 'body' | 'bodyEn' | 'bodyJa'>, lang: Lang) {
   return lang === 'ja' ? o.bodyJa : o.bodyEn;
@@ -58,18 +58,16 @@ export function OpinionCard({
   return (
     <article
       className={cn(
-        'flex flex-col gap-2 rounded-xl border border-t-4 p-3.5 shadow-sm transition',
+        'flex flex-col gap-2 rounded-xl border border-t-4 p-4 pb-3 shadow-[0_1px_2px_rgb(0_0_0/0.05)] transition-opacity',
         CATEGORY_STYLE[o.category],
-        o.mine && 'ring-2 ring-slate-900/10',
+        o.mine && 'ring-1 ring-slate-900/15',
         pending && 'opacity-60',
       )}
     >
-      <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-600">
-        <span className="font-semibold">{categoryLabel(lang, o.category)}</span>
-        <span className="rounded-full bg-white/80 px-2 py-0.5 font-medium">{o.groupName}</span>
-        {o.mine && (
-          <span className="rounded-full bg-slate-900 px-2 py-0.5 font-medium text-white">{t(lang, 'me')}</span>
-        )}
+      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+        <span className="font-medium">{categoryLabel(lang, o.category)}</span>
+        <span className="font-mono text-slate-500">{o.groupName}</span>
+        {o.mine && <span className="ml-auto font-medium text-slate-900">{t(lang, 'me')}</span>}
       </div>
 
       {editing ? (
@@ -81,10 +79,11 @@ export function OpinionCard({
                 key={c}
                 onClick={() => setCategory(c)}
                 className={cn(
-                  'rounded-md border px-2 py-1 text-xs font-medium',
+                  'flex items-center gap-2 rounded-md border px-2 py-1 text-xs font-medium',
                   category === c ? CATEGORY_SELECTED[c] : 'bg-white',
                 )}
               >
+                <CategoryDot category={c} />
                 {categoryLabel(lang, c)}
               </button>
             ))}
@@ -129,12 +128,12 @@ export function OpinionCard({
           onClick={onVote}
           aria-pressed={vote.voted}
           className={cn(
-            'inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold transition active:scale-95',
+            'inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-sm font-medium transition-[color,background-color,border-color,transform] active:scale-[0.97]',
             vote.voted
               ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-slate-300/80 bg-white text-slate-700 hover:border-primary hover:text-primary',
-            !canVote && 'cursor-default opacity-80 hover:border-slate-300/80 hover:text-slate-700',
-            voting && 'animate-pulse',
+              : 'border-slate-900/10 bg-white/70 text-slate-700 hover:border-primary/60 hover:text-primary',
+            !canVote && 'cursor-default opacity-80 hover:border-slate-900/10 hover:text-slate-700',
+            voting && 'opacity-80',
           )}
         >
           <ThumbsUp className="size-3.5" />
@@ -143,7 +142,7 @@ export function OpinionCard({
         {translated && !editing && (
           <button
             type="button"
-            className="inline-flex h-8 items-center gap-1 rounded-full px-2 text-xs text-slate-500 hover:bg-white/70 hover:text-slate-800"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs text-slate-500 transition-colors hover:bg-white/70 hover:text-slate-800"
             onClick={() => setShowOriginal((v) => !v)}
             title={showOriginal ? t(lang, 'showTranslation') : t(lang, 'showOriginal')}
           >
@@ -157,7 +156,7 @@ export function OpinionCard({
               type="button"
               aria-label={t(lang, 'edit')}
               title={t(lang, 'edit')}
-              className="grid size-8 place-items-center rounded-full text-slate-500 hover:bg-white/80 hover:text-slate-900"
+              className="grid size-8 place-items-center rounded-md text-slate-500 transition-colors hover:bg-white/80 hover:text-slate-900"
               onClick={() => setEditing(true)}
             >
               <Pencil className="size-4" />
@@ -166,7 +165,7 @@ export function OpinionCard({
               type="button"
               aria-label={t(lang, 'delete')}
               title={t(lang, 'delete')}
-              className="grid size-8 place-items-center rounded-full text-slate-500 hover:bg-white/80 hover:text-rose-600"
+              className="grid size-8 place-items-center rounded-md text-slate-500 transition-colors hover:bg-white/80 hover:text-rose-600"
               onClick={() => confirm(t(lang, 'confirmDelete')) && run(() => deleteOpinion(sessionId, o.id))}
             >
               <Trash2 className="size-4" />

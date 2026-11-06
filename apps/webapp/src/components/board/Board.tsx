@@ -1,18 +1,21 @@
 'use client';
 
+import { StickyNote } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { GroupRow, OpinionView } from '@/lib/data';
 import { CATEGORIES, categoryLabel, t, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { CATEGORY_SELECTED } from './categories';
+import { CategoryDot } from './categories';
 import { Composer } from './Composer';
 import { OpinionCard } from './OpinionCard';
 
-const chip = (active: boolean, activeClass = 'bg-slate-900 text-white border-slate-900') =>
+const chip = (active: boolean) =>
   cn(
-    'inline-flex shrink-0 items-center gap-1 rounded-full border px-3 py-1.5 text-sm whitespace-nowrap transition',
-    active ? activeClass : 'bg-card hover:bg-accent',
+    'inline-flex h-8 shrink-0 items-center gap-2 rounded-md border px-3 text-sm whitespace-nowrap transition-colors',
+    active ? 'border-slate-900 bg-slate-900 text-white' : 'bg-card text-secondary-foreground hover:bg-secondary',
   );
+
+const count = 'font-mono text-xs tabular-nums opacity-60';
 
 /** Single-line, swipeable on phones (wrapping chips pushed the notes below the fold). */
 function ChipRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -69,7 +72,7 @@ export function Board({
           </button>
           {myGroupId && (
             <button type="button" className={chip(groupFilter === myGroupId)} onClick={() => setGroupFilter(myGroupId)}>
-              ⭐ {t(lang, 'myGroup')}
+              {t(lang, 'myGroup')}
             </button>
           )}
           {groups
@@ -87,16 +90,12 @@ export function Board({
         </ChipRow>
         <ChipRow label={t(lang, 'category')}>
           <button type="button" className={chip(category === 'all')} onClick={() => setCategory('all')}>
-            {t(lang, 'allCategories')} <span className="opacity-60 tabular-nums">{inGroup.length}</span>
+            {t(lang, 'allCategories')} <span className={count}>{inGroup.length}</span>
           </button>
           {CATEGORIES.map((c) => (
-            <button
-              type="button"
-              key={c}
-              className={chip(category === c, CATEGORY_SELECTED[c])}
-              onClick={() => setCategory(c)}
-            >
-              {categoryLabel(lang, c)} <span className="opacity-60 tabular-nums">{countOf(c)}</span>
+            <button type="button" key={c} className={chip(category === c)} onClick={() => setCategory(c)}>
+              <CategoryDot category={c} />
+              {categoryLabel(lang, c)} <span className={count}>{countOf(c)}</span>
             </button>
           ))}
         </ChipRow>
@@ -104,9 +103,9 @@ export function Board({
 
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground tabular-nums">{shown.length}</span> {t(lang, 'notes')}
+          <span className="font-medium text-foreground tabular-nums">{shown.length}</span> {t(lang, 'notes')}
         </p>
-        <fieldset className="inline-flex rounded-full border bg-card p-0.5 text-xs">
+        <fieldset className="inline-flex rounded-lg border bg-card p-0.5 text-xs">
           {(['new', 'top'] as const).map((s) => (
             <button
               type="button"
@@ -114,8 +113,8 @@ export function Board({
               aria-pressed={sort === s}
               onClick={() => setSort(s)}
               className={cn(
-                'rounded-full px-3 py-1 font-medium transition',
-                sort === s ? 'bg-slate-900 text-white' : 'text-muted-foreground hover:text-foreground',
+                'h-7 rounded-md px-3 font-medium transition-colors',
+                sort === s ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {s === 'new' ? t(lang, 'sortNew') : t(lang, 'sortTop')}
@@ -125,10 +124,8 @@ export function Board({
       </div>
 
       {shown.length === 0 ? (
-        <div className="rounded-2xl border border-dashed bg-card/60 px-6 py-14 text-center">
-          <div className="text-4xl" aria-hidden>
-            🗒️
-          </div>
+        <div className="rounded-xl border border-dashed bg-card/60 px-6 py-14 text-center">
+          <StickyNote className="mx-auto size-6 text-muted-foreground" strokeWidth={1.5} aria-hidden />
           <p className="mt-3 font-medium">{opinions.length === 0 ? t(lang, 'empty') : t(lang, 'noMatch')}</p>
           {opinions.length === 0 && canPost && (
             <p className="mt-1 text-sm text-muted-foreground">{t(lang, 'emptyHint')}</p>

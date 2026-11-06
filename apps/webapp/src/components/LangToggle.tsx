@@ -18,7 +18,7 @@ export function LangToggle({ lang }: { lang: Lang }) {
   return (
     <fieldset
       aria-label="Language"
-      className={cn('inline-flex rounded-full bg-white/10 p-0.5 text-xs', pending && 'opacity-60')}
+      className={cn('inline-flex rounded-md bg-white/8 p-0.5 text-xs', pending && 'opacity-60')}
     >
       {(['ja', 'en'] as const).map((l) => (
         <button
@@ -27,8 +27,8 @@ export function LangToggle({ lang }: { lang: Lang }) {
           onClick={() => choose(l)}
           aria-pressed={lang === l}
           className={cn(
-            'rounded-full px-2.5 py-1 font-medium transition-colors',
-            lang === l ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white',
+            'h-7 rounded-[4px] px-2.5 font-medium transition-colors',
+            lang === l ? 'bg-white/14 text-white' : 'text-slate-400 hover:text-white',
           )}
         >
           {l === 'ja' ? '日本語' : 'EN'}

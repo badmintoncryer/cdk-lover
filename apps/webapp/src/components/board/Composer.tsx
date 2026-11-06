@@ -12,7 +12,7 @@ import { PublicNotice } from '@/components/PublicNotice';
 import type { GroupRow } from '@/lib/data';
 import { CATEGORIES, categoryLabel, isLang, t, type Category, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { CATEGORY_SELECTED } from './categories';
+import { CATEGORY_SELECTED, CategoryDot } from './categories';
 
 const MAX = 400;
 
@@ -61,11 +61,11 @@ export function Composer({
     <Card>
       <form onSubmit={submit} className="space-y-3 p-4 sm:p-5">
         <div className="flex items-center gap-2">
-          <h2 className="font-bold">{t(lang, 'newNote')}</h2>
+          <h2 className="font-semibold">{t(lang, 'newNote')}</h2>
           <label className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
             <span className="sr-only sm:not-sr-only">{t(lang, 'yourGroup')}</span>
             <select
-              className="rounded-md border bg-card px-2 py-1 text-sm font-semibold text-foreground"
+              className="h-8 rounded-md border bg-card px-2 font-mono text-sm text-foreground"
               value={myGroupId}
               onChange={(e) => onGroup(e.target.value)}
               disabled={pending}
@@ -88,10 +88,11 @@ export function Composer({
               key={c}
               onClick={() => setCategory(c)}
               className={cn(
-                'rounded-lg border px-3 py-2 text-sm font-medium transition',
-                category === c ? `${CATEGORY_SELECTED[c]} shadow-sm` : 'bg-card hover:bg-accent',
+                'flex h-10 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors',
+                category === c ? CATEGORY_SELECTED[c] : 'bg-card text-secondary-foreground hover:bg-secondary',
               )}
             >
+              <CategoryDot category={c} />
               {categoryLabel(lang, c)}
             </button>
           ))}
