@@ -1,5 +1,5 @@
 /**
- * The CDK Lover MCP server. One server, two kinds of caller:
+ * The CDK Lovers MCP server. One server, two kinds of caller:
  * - a participant (token issued on the board after joining) gets the board and people tools for
  *   their one session, acting as the same anonymous person as their browser;
  * - the admin (token from Secrets Manager) gets the admin page operations for every session.
@@ -459,9 +459,9 @@ function registerAdminTools(server: McpServer) {
 export function createMcpServer(caller: Caller): McpServer {
   const instructions =
     caller.kind === 'admin'
-      ? 'CDK Lover admin tools: manage sessions, groups, moderation and AI summaries for the CDK Lover feedback board. Confirm with the user before any delete.'
-      : `CDK Lover feedback board for session "${caller.participant.session.title}". Attendees post anonymous feedback about AWS CDK (auto-translated between Japanese and English), +1 each other's posts, and share a short profile. Post one thought per post, in the user's own words; ask the user before posting on their behalf.`;
-  const server = new McpServer({ name: 'cdk-lover', version: '1.0.0' }, { instructions });
+      ? 'CDK Lovers admin tools: manage sessions, groups, moderation and AI summaries for the CDK Lovers feedback board. Confirm with the user before any delete.'
+      : `CDK Lovers feedback board for session "${caller.participant.session.title}". Attendees post anonymous feedback about AWS CDK (auto-translated between Japanese and English), +1 each other's posts, and share a short profile. Post one thought per post, in the user's own words; ask the user before posting on their behalf.`;
+  const server = new McpServer({ name: 'cdk-lovers', version: '1.0.0' }, { instructions });
   if (caller.kind === 'admin') registerAdminTools(server);
   else registerParticipantTools(server, caller.participant);
   return server;

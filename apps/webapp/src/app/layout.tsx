@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
-  title: 'CDK Lover',
+  title: 'CDK Lovers',
   description: 'Community session at AWS re:Invent',
   robots: { index: false, follow: false },
 };

@@ -8,7 +8,7 @@ export function Logo({ className = '' }: { className?: string }) {
   return (
     <span className={`inline-flex items-center gap-[0.25em] font-semibold tracking-tight ${className}`}>
       <span>
-        <span className="text-brand">CDK</span> Lover
+        <span className="text-brand">CDK</span> Lovers
       </span>
       <Heart aria-hidden className="size-[0.8em] fill-current text-brand" strokeWidth={0} />
     </span>

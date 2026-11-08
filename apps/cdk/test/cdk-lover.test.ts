@@ -19,7 +19,7 @@ function synth(budgetEmail?: string) {
   return Template.fromStack(main);
 }
 
-describe('CDK Lover stack', () => {
+describe('CDK Lovers stack', () => {
   const template = synth();
 
   test('nothing is retained: cdk destroy removes the database and secrets', () => {
