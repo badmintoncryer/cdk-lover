@@ -30,7 +30,7 @@ export function toCsv(opinions: OpinionView[]): string {
 
 export function toMarkdown(session: SessionRow, groups: GroupRow[], opinions: OpinionView[]): string {
   const out: string[] = [];
-  out.push(`# CDK Lover feedback report — ${session.title}`, '');
+  out.push(`# CDK Lovers feedback report — ${session.title}`, '');
   out.push(
     `- Notes: ${opinions.length}`,
     `- Groups: ${groups.map((g) => `${g.name} (${g.language})`).join(', ') || '-'}`,

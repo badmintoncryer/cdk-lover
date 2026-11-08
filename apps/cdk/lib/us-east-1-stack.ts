@@ -6,7 +6,7 @@ import { EdgeFunction } from './constructs/cf-lambda-furl-service/edge-function'
 import { join } from 'path';
 
 export interface CustomDomain {
-  /** e.g. `cdk-lover.appnao.com`. The site is served at the apex of the hosted zone. */
+  /** e.g. `cdk-lovers.appnao.com`. The site is served at the apex of the hosted zone. */
   readonly domainName: string;
   /** Public hosted zone whose name is `domainName`, in the deploy account. */
   readonly hostedZoneId: string;
@@ -41,7 +41,9 @@ export class UsEast1Stack extends cdk.Stack {
 
     if (props.customDomain) {
       const { domainName, hostedZoneId } = props.customDomain;
-      this.certificate = new Certificate(this, 'Certificate', {
+      // The construct ID is part of the cross-region export name, and the export writer never
+      // overwrites an existing name. Rename it whenever the domain changes (cdk-lover → cdk-lovers).
+      this.certificate = new Certificate(this, 'SiteCertificate', {
         domainName,
         validation: CertificateValidation.fromDns(
           HostedZone.fromHostedZoneAttributes(this, 'HostedZone', { hostedZoneId, zoneName: domainName }),

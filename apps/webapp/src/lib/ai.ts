@@ -72,7 +72,7 @@ export async function translate(text: string): Promise<Translation> {
 
 export type SummaryInput = { category: string; group: string; text: string; votes: number };
 
-const SUMMARY_SYSTEM = `You are helping the host of "CDK Lover", a community session at AWS re:Invent where attendees discuss AWS CDK in small groups and then give feedback directly to the AWS CDK team.
+const SUMMARY_SYSTEM = `You are helping the host of "CDK Lovers", a community session at AWS re:Invent where attendees discuss AWS CDK in small groups and then give feedback directly to the AWS CDK team.
 Summarize all sticky notes for the CDK team. Group similar points into themes, highlight what got the most +1 votes, and keep concrete requests (feature names, pain points) specific.
 Structure, in Markdown:
 ## Highlights (3-5 bullets)

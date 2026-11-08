@@ -1,6 +1,6 @@
-# CDK Lover 💜
+# CDK Lovers 💜
 
-AWS re:Invent のコミュニティセッション「CDK Lover」専用の Web サイトです。参加者が CDK の「好き / つらい / こうしてほしい」を付箋のように投稿し、全グループの意見をひとつのボードで共有して、最後に CDK チームへスクリーンで直接フィードバックします。
+AWS re:Invent のコミュニティセッション「CDK Lovers」専用の Web サイトです。参加者が CDK の「好き / つらい / こうしてほしい」を付箋のように投稿し、全グループの意見をひとつのボードで共有して、最後に CDK チームへスクリーンで直接フィードバックします。
 
 [aws-samples/serverless-full-stack-webapp-starter-kit](https://github.com/aws-samples/serverless-full-stack-webapp-starter-kit) をベースにしています（MIT-0）。
 
@@ -61,16 +61,23 @@ pnpm exec cdk deploy --all -c translateModelId=<model or inference profile id> -
 
 ### カスタムドメイン
 
-`apps/cdk/cdk.json` の `domainName` と `hostedZoneId` で、サイトを独自ドメイン（現在は `https://cdk-lover.appnao.com`）で配信します。us-east-1 のスタックで ACM 証明書（DNS 検証）を発行し、メインのスタックで CloudFront に別名と Route 53 のエイリアスレコードを付けます。`*.cloudfront.net` の URL もそのまま使えます。
+`apps/cdk/cdk.json` の `domainName` と `hostedZoneId` で、サイトを独自ドメイン（現在は `https://cdk-lovers.appnao.com`）で配信します。us-east-1 のスタックで ACM 証明書（DNS 検証）を発行し、メインのスタックで CloudFront に別名と Route 53 のエイリアスレコードを付けます。`*.cloudfront.net` の URL もそのまま使えます。
 
 ホストゾーンは `domainName` と同じ名前でデプロイ先アカウントに置きます。親ドメインが別アカウントにある場合は、先にゾーンを作って親ゾーンに NS レコードで委任してください（委任前にデプロイすると証明書の検証で止まります）。
 
 ```bash
-AWS_PROFILE=<deploy> aws route53 create-hosted-zone --name cdk-lover.example.com --caller-reference $(date +%s)
-# 返ってきた 4 つの NS を、親ゾーン（example.com）に cdk-lover.example.com の NS レコードとして追加
+AWS_PROFILE=<deploy> aws route53 create-hosted-zone --name cdk-lovers.example.com --caller-reference $(date +%s)
+# 返ってきた 4 つの NS を、親ゾーン（example.com）に cdk-lovers.example.com の NS レコードとして追加
 ```
 
 独自ドメインなしでデプロイするときは `-c domainName= -c hostedZoneId=` を付けます。
+
+ドメインを変えるときは、先にメインのスタックだけを独自ドメインなしでデプロイし、古い証明書を CloudFront から外してから全体をデプロイします。CloudFront が使っている証明書は削除できないためです。あわせて `us-east-1-stack.ts` の証明書のコンストラクト ID も変えてください。リージョン間参照の値は、名前が同じままだと更新されません。
+
+```bash
+pnpm exec cdk deploy CdkLoverStack --exclusively -c domainName= -c hostedZoneId=
+pnpm exec cdk deploy --all
+```
 
 デプロイ後に一度だけやること:
 
@@ -121,7 +128,7 @@ IP が変わったら `scripts/allow-ip.sh` を実行し直してください。
 
 ```bash
 TOKEN=$(aws secretsmanager get-secret-value --region us-west-2 --secret-id <McpAdminTokenCommand の secret-id> --query SecretString --output text)
-claude mcp add -s user --transport http cdk-lover-admin "<FrontendDomainName>/api/mcp/$TOKEN"   # 例: https://cdk-lover.appnao.com/api/mcp/$TOKEN
+claude mcp add -s user --transport http cdk-lovers-admin "<FrontendDomainName>/api/mcp/$TOKEN"   # 例: https://cdk-lovers.appnao.com/api/mcp/$TOKEN
 ```
 
 ## 撤去

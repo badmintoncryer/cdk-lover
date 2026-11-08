@@ -7,8 +7,8 @@ export const ORGANIZER = {
   githubUrl: 'https://github.com/badmintoncryer',
   avatarUrl: 'https://github.com/badmintoncryer.png?size=160',
   intro: {
-    ja: 'CDK Lover の主催者',
-    en: 'Host of CDK Lover',
+    ja: 'CDK Lovers の主催者',
+    en: 'Host of CDK Lovers',
   },
   /** Second line under the intro; titles, so the same in both languages. */
   credentials: 'AWS Hero & AWS CDK Top Contributor & Trusted Community Reviewer',

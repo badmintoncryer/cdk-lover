@@ -15,7 +15,7 @@
     ]
   },
   "context": {
-    "domainName": "cdk-lover.appnao.com",
+    "domainName": "cdk-lovers.appnao.com",
     "hostedZoneId": "Z0668342ZTVZFEWC65XR",
     "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
     "@aws-cdk/core:checkSecretUsage": true,

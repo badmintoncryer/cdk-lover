@@ -4,7 +4,7 @@ export const CATEGORIES = ['good', 'bad', 'wish', 'other'] as const;
 export type Category = (typeof CATEGORIES)[number];
 
 const dict = {
-  appName: { ja: 'CDK Lover', en: 'CDK Lover' },
+  appName: { ja: 'CDK Lovers', en: 'CDK Lovers' },
   tagline: {
     ja: 'CDK の好きなところ・つらみ・こうしてほしいことを、CDK チームに届けよう',
     en: 'Tell the AWS CDK team what you love, what hurts, and what you wish for',

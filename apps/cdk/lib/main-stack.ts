@@ -72,7 +72,7 @@ interface MainStackProps extends StackProps {
 export class MainStack extends Stack {
   constructor(scope: Construct, id: string, props: MainStackProps) {
     super(scope, id, {
-      description: 'CDK Lover session platform (based on serverless-full-stack-webapp-starter-kit)',
+      description: 'CDK Lovers session platform (based on serverless-full-stack-webapp-starter-kit)',
       ...props,
     });
 

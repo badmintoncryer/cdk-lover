@@ -13,14 +13,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ sessionI
     return new Response(toCsv(opinions), {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="cdk-lover-${sessionId}.csv"`,
+        'Content-Disposition': `attachment; filename="cdk-lovers-${sessionId}.csv"`,
       },
     });
   }
   return new Response(toMarkdown(session, groups, opinions), {
     headers: {
       'Content-Type': 'text/markdown; charset=utf-8',
-      'Content-Disposition': `attachment; filename="cdk-lover-${sessionId}.md"`,
+      'Content-Disposition': `attachment; filename="cdk-lovers-${sessionId}.md"`,
     },
   });
 }
