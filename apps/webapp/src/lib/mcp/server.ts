@@ -28,7 +28,8 @@ const json = (value: unknown): CallToolResult => ({
 async function handle(tool: string, fn: () => Promise<unknown>): Promise<CallToolResult> {
   try {
     const value = await fn();
-    return json(value ?? { ok: true });
+    // Only a void result becomes { ok: true }; null is a real answer (e.g. "no profile").
+    return json(value === undefined ? { ok: true } : value);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error(JSON.stringify({ msg: 'mcp tool failed', tool, error: msg }));
