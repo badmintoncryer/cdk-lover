@@ -98,6 +98,10 @@ const dict = {
   statNotes: { ja: '意見', en: 'Posts' },
   statVotes: { ja: '+1', en: 'Votes' },
   fullscreen: { ja: '全画面', en: 'Fullscreen' },
+  rotateHint: {
+    ja: 'スマホを横向きにすると全カテゴリを見やすくなります',
+    en: 'Turn your phone sideways for a better view',
+  },
   madeBy: { ja: 'Made by', en: 'Made by' },
   organizer: { ja: '主催者', en: 'Organizer' },
   fresh: { ja: '新着', en: 'New' },

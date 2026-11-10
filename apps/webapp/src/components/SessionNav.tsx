@@ -28,8 +28,8 @@ export function SessionNav({ sessionId, labels }: { sessionId: string; labels: L
           {label}
         </Link>
       ))}
-      {/* The projector view is for the presenter's laptop, not phones. */}
-      <Link href={`${base}/screen`} target="_blank" className={cn(item(false), 'hidden md:flex')}>
+      {/* Without a projector, attendees open the screen view on their own phones too. */}
+      <Link href={`${base}/screen`} target="_blank" className={item(false)}>
         <Presentation className="size-4" />
         {labels.screen}
         <ArrowUpRight className="-ml-1 size-3.5 opacity-60" aria-hidden />

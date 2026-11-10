@@ -2,6 +2,8 @@
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
+/* A phone held sideways: wide enough for md breakpoints but too short for the projector layout. */
+@custom-variant short (@media (orientation: landscape) and (max-height: 500px));
 
 @theme inline {
   --color-background: var(--background);
