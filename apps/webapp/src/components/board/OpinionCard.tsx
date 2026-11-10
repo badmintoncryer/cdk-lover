@@ -66,7 +66,6 @@ export function OpinionCard({
     >
       <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
         <span className="font-medium">{categoryLabel(lang, o.category)}</span>
-        <span className="font-mono text-slate-500">{o.groupName}</span>
         {o.mine && <span className="ml-auto font-medium text-slate-900">{t(lang, 'me')}</span>}
       </div>
 

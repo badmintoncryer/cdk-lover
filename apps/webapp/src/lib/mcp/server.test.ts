@@ -49,7 +49,6 @@ describe('createMcpServer', () => {
       expect.arrayContaining([
         'admin_list_sessions',
         'admin_upsert_session',
-        'admin_add_group',
         'admin_delete_opinion',
         'admin_run_summary',
         'admin_export',

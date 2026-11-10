@@ -56,27 +56,6 @@ export async function upsertSession(input: z.infer<typeof sessionInput>): Promis
   return { created: !existing };
 }
 
-export const groupInput = z.object({ name: z.string().trim().min(1).max(40), language: z.enum(['ja', 'en']) });
-
-export async function addGroup(sessionId: string, input: z.infer<typeof groupInput>): Promise<{ id: string }> {
-  const parsed = groupInput.safeParse(input);
-  if (!parsed.success) throw coreError('invalid');
-  if (!(await getSession(sessionId))) throw coreError('session not found');
-  const [row] = await db
-    .insert(groups)
-    .values({ sessionId, ...parsed.data })
-    .returning({ id: groups.id });
-  await refreshAdmin(sessionId);
-  return { id: row!.id };
-}
-
-export async function deleteGroup(sessionId: string, groupId: string) {
-  const used = await db.query.opinions.findFirst({ where: eq(opinions.groupId, groupId) });
-  if (used) throw coreError('group has notes; delete them first');
-  await db.delete(groups).where(and(eq(groups.id, groupId), eq(groups.sessionId, sessionId)));
-  await refreshAdmin(sessionId);
-}
-
 export async function deleteAnyOpinion(sessionId: string, opinionId: string) {
   await db.transaction(async (tx) => {
     await tx.delete(opinions).where(and(eq(opinions.id, opinionId), eq(opinions.sessionId, sessionId)));
@@ -103,9 +82,7 @@ export async function runSummary(sessionId: string): Promise<{ en: string; ja: s
     .update(sessions)
     .set({ summaryCount: session.summaryCount + 1 })
     .where(eq(sessions.id, sessionId));
-  const { en, ja } = await summarize(
-    items.map((o) => ({ category: o.category, group: o.groupName, text: o.bodyEn, votes: o.votes })),
-  );
+  const { en, ja } = await summarize(items.map((o) => ({ category: o.category, text: o.bodyEn, votes: o.votes })));
   await db
     .update(sessions)
     .set({ summaryEn: en, summaryJa: ja, summarizedAt: new Date() })

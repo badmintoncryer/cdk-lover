@@ -79,7 +79,7 @@ export async function translate(text: string): Promise<Translation> {
   }
 }
 
-export type SummaryInput = { category: string; group: string; text: string; votes: number };
+export type SummaryInput = { category: string; text: string; votes: number };
 
 const SUMMARY_SYSTEM = `You are helping the host of "CDK Lovers", a community session at AWS re:Invent where attendees discuss AWS CDK in small groups and then give feedback directly to the AWS CDK team.
 Summarize all sticky notes for the CDK team. Group similar points into themes, highlight what got the most +1 votes, and keep concrete requests (feature names, pain points) specific.
@@ -103,9 +103,7 @@ export function splitSummary(text: string): { en: string; ja: string } {
 export async function summarize(items: SummaryInput[]): Promise<{ en: string; ja: string }> {
   const modelId = process.env.SUMMARY_MODEL_ID;
   if (!modelId) throw new Error('SUMMARY_MODEL_ID is not set');
-  const lines = items
-    .map((o) => `- [${o.category}] (+${o.votes}, ${o.group}) ${o.text.replace(/\s+/g, ' ')}`)
-    .join('\n');
+  const lines = items.map((o) => `- [${o.category}] (+${o.votes}) ${o.text.replace(/\s+/g, ' ')}`).join('\n');
   const out = await converse(modelId, SUMMARY_SYSTEM, `Sticky notes (${items.length}):\n${lines}`, 4000);
   return splitSummary(out);
 }

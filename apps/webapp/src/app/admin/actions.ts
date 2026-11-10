@@ -44,14 +44,6 @@ export async function upsertSession(input: z.infer<typeof core.sessionInput>): P
   return asAdmin(() => core.upsertSession(input));
 }
 
-export async function addGroup(sessionId: string, name: string, language: string): Promise<AdminResult> {
-  return asAdmin(() => core.addGroup(sessionId, { name, language: language as 'ja' | 'en' }));
-}
-
-export async function deleteGroup(sessionId: string, groupId: string): Promise<AdminResult> {
-  return asAdmin(() => core.deleteGroup(sessionId, groupId));
-}
-
 export async function adminDeleteOpinion(sessionId: string, opinionId: string): Promise<AdminResult> {
   return asAdmin(() => core.deleteAnyOpinion(sessionId, opinionId));
 }

@@ -8,7 +8,7 @@ import { LiveRefresh } from '@/components/LiveRefresh';
 import { Markdown } from '@/components/Markdown';
 import { Logo } from '@/components/SiteHeader';
 import { CATEGORY_STYLE, CategoryDot } from '@/components/board/categories';
-import { getSession, listGroups, listOpinions } from '@/lib/data';
+import { getSession, listOpinions } from '@/lib/data';
 import { CATEGORIES, categoryLabel, isLang, t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
@@ -34,7 +34,7 @@ export default async function ScreenPage({
   searchParams,
 }: {
   params: Promise<{ sessionId: string }>;
-  searchParams: Promise<{ lang?: string; view?: string; group?: string }>;
+  searchParams: Promise<{ lang?: string; view?: string }>;
 }) {
   const { sessionId } = await params;
   const sp = await searchParams;
@@ -42,13 +42,12 @@ export default async function ScreenPage({
   if (!session) notFound();
   const lang = isLang(sp.lang) ? sp.lang : 'en';
   const view = sp.view === 'summary' ? 'summary' : 'notes';
-  const [opinions, groups] = await Promise.all([listOpinions(sessionId), listGroups(sessionId)]);
-  const filtered = sp.group ? opinions.filter((o) => o.groupId === sp.group) : opinions;
+  const opinions = await listOpinions(sessionId);
   const summary = lang === 'ja' ? session.summaryJa : session.summaryEn;
-  const totalVotes = filtered.reduce((n, o) => n + o.votes, 0);
+  const totalVotes = opinions.reduce((n, o) => n + o.votes, 0);
 
   const q = (patch: Record<string, string | undefined>) => {
-    const next = { lang, view, group: sp.group, ...patch };
+    const next = { lang, view, ...patch };
     const s = new URLSearchParams(Object.entries(next).filter(([, v]) => v) as [string, string][]);
     return `?${s.toString()}`;
   };
@@ -65,7 +64,7 @@ export default async function ScreenPage({
           <Credit className="mt-1 text-sm text-slate-500 short:hidden" />
         </div>
         <dl className="flex gap-6 short:gap-4">
-          <Stat label={t(lang, 'statNotes')} value={filtered.length} />
+          <Stat label={t(lang, 'statNotes')} value={opinions.length} />
           <Stat label={t(lang, 'statVotes')} value={totalVotes} />
         </dl>
         {/* Phones in hand have already joined, so the QR only takes room there (laptop windows keep it). */}
@@ -102,15 +101,6 @@ export default async function ScreenPage({
           {t(lang, 'summary')}
         </Link>
         <span className="mx-2 h-4 border-l border-white/15" />
-        <Link className={tab(!sp.group)} href={q({ group: undefined })}>
-          {t(lang, 'allGroups')}
-        </Link>
-        {groups.map((g) => (
-          <Link key={g.id} className={tab(sp.group === g.id)} href={q({ group: g.id })}>
-            {g.name}
-          </Link>
-        ))}
-        <span className="mx-2 h-4 border-l border-white/15" />
         <Link className={tab(lang === 'en')} href={q({ lang: 'en' })}>
           EN
         </Link>
@@ -133,7 +123,7 @@ export default async function ScreenPage({
       ) : (
         <main className="grid min-h-0 flex-1 gap-4 px-6 pb-6 md:grid-cols-2 xl:grid-cols-4 short:no-scrollbar short:flex! short:snap-x short:snap-mandatory short:gap-3 short:overflow-x-auto short:px-4 short:pb-3">
           {CATEGORIES.map((c) => {
-            const items = filtered.filter((o) => o.category === c).sort((a, b) => b.votes - a.votes);
+            const items = opinions.filter((o) => o.category === c).sort((a, b) => b.votes - a.votes);
             return (
               <section
                 key={c}
@@ -163,7 +153,6 @@ export default async function ScreenPage({
                           {lang === 'ja' ? o.bodyJa : o.bodyEn}
                         </p>
                         <div className="mt-3 flex items-center gap-2 text-sm text-slate-600 short:mt-1.5 short:text-xs">
-                          <span className="font-mono text-slate-500">{o.groupName}</span>
                           {fresh && <span className="font-medium text-brand-ink">{t(lang, 'fresh')}</span>}
                           {o.votes > 0 && (
                             <span className="ml-auto inline-flex items-center gap-1.5 text-lg font-medium text-slate-800 tabular-nums short:text-sm">
