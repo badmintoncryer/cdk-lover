@@ -45,6 +45,22 @@ export function untranslated(text: string): Translation {
 }
 
 /**
+ * Builds the translation from the model's reply. Between Japanese and English the script decides
+ * the source language, not the model: short notes that start with a product name ("MCP", "CDK")
+ * were labelled "en" and then shown untranslated in both columns.
+ */
+export function fromModel(text: string, parsed: Partial<Translation>, fallbackLang: string): Translation {
+  const modelLang = typeof parsed.sourceLang === 'string' ? parsed.sourceLang.slice(0, 8) : fallbackLang;
+  const sourceLang = modelLang === 'en' || modelLang === 'ja' ? guessLang(text) : modelLang;
+  return {
+    sourceLang,
+    // Keep the author's exact words for their own language.
+    en: sourceLang === 'en' ? text : parsed.en?.trim() || text,
+    ja: sourceLang === 'ja' ? text : parsed.ja?.trim() || text,
+  };
+}
+
+/**
  * Translates a post into both languages. Never throws: on any model error the original text is
  * shown in both languages so a post is never lost because of the AI.
  */
@@ -56,14 +72,7 @@ export async function translate(text: string): Promise<Translation> {
   try {
     // 400 chars of input needs far fewer output tokens; a low cap bounds "repeat this" prompt abuse.
     const out = await converse(modelId, TRANSLATE_SYSTEM, text, 800);
-    const parsed = extractJson(out) as Partial<Translation>;
-    const sourceLang = typeof parsed.sourceLang === 'string' ? parsed.sourceLang.slice(0, 8) : fallbackLang;
-    return {
-      sourceLang,
-      // Keep the author's exact words for their own language.
-      en: sourceLang === 'en' ? text : (parsed.en?.trim() ?? text),
-      ja: sourceLang === 'ja' ? text : (parsed.ja?.trim() ?? text),
-    };
+    return fromModel(text, extractJson(out) as Partial<Translation>, fallbackLang);
   } catch (e) {
     console.error(JSON.stringify({ msg: 'translate failed', error: String(e) }));
     return fallback;
