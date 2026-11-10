@@ -4,8 +4,6 @@ import { toCsv, toMarkdown } from './report';
 
 const o = (p: Partial<OpinionView>): OpinionView => ({
   id: '1',
-  groupId: 'g',
-  groupName: 'JP-1',
   category: 'good',
   body: 'L2 が便利',
   sourceLang: 'ja',
@@ -33,11 +31,7 @@ describe('report', () => {
 
   test('markdown sorts by votes within a category', () => {
     const session = { title: 'Nov 30', summaryEn: null, summaryJa: null } as SessionRow;
-    const md = toMarkdown(
-      session,
-      [],
-      [o({ id: '1', bodyEn: 'low', votes: 1 }), o({ id: '2', bodyEn: 'high', votes: 5 })],
-    );
+    const md = toMarkdown(session, [o({ id: '1', bodyEn: 'low', votes: 1 }), o({ id: '2', bodyEn: 'high', votes: 5 })]);
     expect(md.indexOf('high')).toBeLessThan(md.indexOf('low'));
     expect(md).toContain('_(original: L2 が便利)_');
   });

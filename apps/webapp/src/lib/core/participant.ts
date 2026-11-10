@@ -10,7 +10,13 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { translate, untranslated } from '@/lib/ai';
 import { purposeKey } from '@/lib/crypto';
-import { countOpinionsBy, countOpinionsInSession, listGroups, reserveTranslation, type SessionRow } from '@/lib/data';
+import {
+  countOpinionsBy,
+  countOpinionsInSession,
+  languageGroupId,
+  reserveTranslation,
+  type SessionRow,
+} from '@/lib/data';
 import { notifySession } from '@/lib/events';
 import { CATEGORIES } from '@/lib/i18n';
 import { normalizeProfileUrl } from '@/lib/profile';
@@ -66,19 +72,18 @@ function parse<T extends z.ZodType>(schema: T, input: unknown): z.infer<T> {
 }
 
 export const opinionInput = z.object({
-  groupId: z.string().uuid(),
   category: z.enum(CATEGORIES),
   body: z.string().trim().min(1).max(MAX_BODY),
 });
 
 export async function createOpinion(p: Participant, input: z.infer<typeof opinionInput>): Promise<{ id: string }> {
-  const { groupId, category, body } = parse(opinionInput, input);
+  const { category, body } = parse(opinionInput, input);
   const sessionId = p.session.id;
   assertOpen(p.session);
-  if (!(await listGroups(sessionId)).some((g) => g.id === groupId)) throw coreError('invalid');
   if ((await countOpinionsBy(sessionId, p.authorKey)) >= MAX_OPINIONS_PER_PERSON) throw coreError('limit');
   if ((await countOpinionsInSession(sessionId)) >= MAX_OPINIONS_PER_SESSION) throw coreError('limit');
   const tr = await translateWithinBudget(sessionId, body);
+  const groupId = await languageGroupId(sessionId, tr.sourceLang === 'ja' ? 'ja' : 'en');
   const [row] = await db
     .insert(opinions)
     .values({

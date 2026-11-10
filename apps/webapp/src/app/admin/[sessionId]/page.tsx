@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { AdminSessionPanel } from '@/components/admin/AdminSessionPanel';
 import { SessionForm } from '@/components/admin/SessionForm';
 import { Markdown } from '@/components/Markdown';
-import { getSession, listGroups, listOpinions, listProfiles } from '@/lib/data';
+import { getSession, listOpinions, listProfiles } from '@/lib/data';
 import { isAdmin } from '@/lib/identity';
 
 export const dynamic = 'force-dynamic';
@@ -13,11 +13,7 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ s
   const { sessionId } = await params;
   const session = await getSession(sessionId);
   if (!session) notFound();
-  const [groups, opinions, profiles] = await Promise.all([
-    listGroups(sessionId),
-    listOpinions(sessionId),
-    listProfiles(sessionId),
-  ]);
+  const [opinions, profiles] = await Promise.all([listOpinions(sessionId), listProfiles(sessionId)]);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 space-y-5">
@@ -40,11 +36,9 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ s
 
       <AdminSessionPanel
         sessionId={sessionId}
-        groups={groups.map((g) => ({ id: g.id, name: g.name, language: g.language }))}
         opinions={opinions.map((o) => ({
           id: o.id,
           category: o.category,
-          group: o.groupName,
           body: o.body,
           bodyEn: o.bodyEn,
           votes: o.votes,

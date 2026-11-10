@@ -4,29 +4,18 @@ import { Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { changeGroup, createOpinion, setLang } from '@/app/actions';
+import { createOpinion } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/input';
 import { PublicNotice } from '@/components/PublicNotice';
-import type { GroupRow } from '@/lib/data';
-import { CATEGORIES, categoryLabel, isLang, t, type Category, type Lang } from '@/lib/i18n';
+import { CATEGORIES, categoryLabel, t, type Category, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { CATEGORY_SELECTED, CategoryDot } from './categories';
 
 const MAX = 400;
 
-export function Composer({
-  lang,
-  sessionId,
-  groups,
-  myGroupId,
-}: {
-  lang: Lang;
-  sessionId: string;
-  groups: GroupRow[];
-  myGroupId: string;
-}) {
+export function Composer({ lang, sessionId }: { lang: Lang; sessionId: string }) {
   const router = useRouter();
   const [category, setCategory] = useState<Category>('good');
   const [body, setBody] = useState('');
@@ -37,7 +26,7 @@ export function Composer({
     e.preventDefault();
     if (!body.trim() || pending) return;
     start(async () => {
-      const res = await createOpinion({ sessionId, groupId: myGroupId, category, body });
+      const res = await createOpinion({ sessionId, category, body });
       if (!res.ok) {
         toast.error(res.error === 'limit' ? t(lang, 'tooMany') : t(lang, 'error'));
         return;
@@ -49,35 +38,10 @@ export function Composer({
     });
   };
 
-  const onGroup = (groupId: string) =>
-    start(async () => {
-      await changeGroup(sessionId, groupId);
-      const language = groups.find((g) => g.id === groupId)?.language;
-      if (isLang(language) && language !== lang) await setLang(language);
-      router.refresh();
-    });
-
   return (
     <Card>
       <form onSubmit={submit} className="space-y-3 p-4 sm:p-5">
-        <div className="flex items-center gap-2">
-          <h2 className="font-semibold">{t(lang, 'newNote')}</h2>
-          <label className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="sr-only sm:not-sr-only">{t(lang, 'yourGroup')}</span>
-            <select
-              className="h-8 rounded-md border bg-card px-2 font-mono text-sm text-foreground"
-              value={myGroupId}
-              onChange={(e) => onGroup(e.target.value)}
-              disabled={pending}
-            >
-              {groups.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        <h2 className="font-semibold">{t(lang, 'newNote')}</h2>
 
         <fieldset className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <legend className="sr-only">{t(lang, 'category')}</legend>

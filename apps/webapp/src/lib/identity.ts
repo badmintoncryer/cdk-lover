@@ -8,7 +8,6 @@ const PID = 'cl_pid';
 const ADMIN = 'cl_admin';
 const LANG = 'cl_lang';
 const joinCookie = (sessionId: string) => `cl_join_${sessionId}`;
-const groupCookie = (sessionId: string) => `cl_group_${sessionId}`;
 
 // Cookies outlive the event by a little; the whole stack is destroyed shortly after anyway.
 const MAX_AGE = 60 * 60 * 24 * 30;
@@ -58,14 +57,6 @@ export async function setJoined(sessionId: string, currentPassphraseHash: string
     joinToken(await getSigningKey(), sessionId, currentPassphraseHash),
     baseCookie,
   );
-}
-
-export async function getGroupId(sessionId: string): Promise<string | undefined> {
-  return (await cookies()).get(groupCookie(sessionId))?.value;
-}
-
-export async function setGroupId(sessionId: string, groupId: string) {
-  (await cookies()).set(groupCookie(sessionId), groupId, { ...baseCookie, httpOnly: false });
 }
 
 export async function isAdmin(): Promise<boolean> {

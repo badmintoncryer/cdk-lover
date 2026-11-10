@@ -2,7 +2,7 @@
 
 import { StickyNote } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import type { GroupRow, OpinionView } from '@/lib/data';
+import type { OpinionView } from '@/lib/data';
 import { CATEGORIES, categoryLabel, t, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { CategoryDot } from './categories';
@@ -34,63 +34,32 @@ export function Board({
   sessionId,
   canPost,
   canVote,
-  groups,
-  myGroupId,
   opinions,
 }: {
   lang: Lang;
   sessionId: string;
   canPost: boolean;
   canVote: boolean;
-  groups: GroupRow[];
-  myGroupId?: string;
   opinions: OpinionView[];
 }) {
-  const [groupFilter, setGroupFilter] = useState<string>('all');
   const [category, setCategory] = useState<string>('all');
   const [sort, setSort] = useState<'new' | 'top'>('new');
 
-  const inGroup = useMemo(
-    () => opinions.filter((o) => groupFilter === 'all' || o.groupId === groupFilter),
-    [opinions, groupFilter],
-  );
   const shown = useMemo(() => {
-    const list = inGroup.filter((o) => category === 'all' || o.category === category);
+    const list = opinions.filter((o) => category === 'all' || o.category === category);
     if (sort === 'top') return [...list].sort((a, b) => b.votes - a.votes || b.createdAt.localeCompare(a.createdAt));
     return list;
-  }, [inGroup, category, sort]);
-  const countOf = (c: string) => inGroup.filter((o) => o.category === c).length;
+  }, [opinions, category, sort]);
+  const countOf = (c: string) => opinions.filter((o) => o.category === c).length;
 
   return (
     <div className="space-y-4">
-      {canPost && myGroupId && <Composer lang={lang} sessionId={sessionId} groups={groups} myGroupId={myGroupId} />}
+      {canPost && <Composer lang={lang} sessionId={sessionId} />}
 
       <div className="space-y-2">
-        <ChipRow label={t(lang, 'filterGroup')}>
-          <button type="button" className={chip(groupFilter === 'all')} onClick={() => setGroupFilter('all')}>
-            {t(lang, 'allGroups')}
-          </button>
-          {myGroupId && (
-            <button type="button" className={chip(groupFilter === myGroupId)} onClick={() => setGroupFilter(myGroupId)}>
-              {t(lang, 'myGroup')}
-            </button>
-          )}
-          {groups
-            .filter((g) => g.id !== myGroupId)
-            .map((g) => (
-              <button
-                type="button"
-                key={g.id}
-                className={chip(groupFilter === g.id)}
-                onClick={() => setGroupFilter(g.id)}
-              >
-                {g.name}
-              </button>
-            ))}
-        </ChipRow>
         <ChipRow label={t(lang, 'category')}>
           <button type="button" className={chip(category === 'all')} onClick={() => setCategory('all')}>
-            {t(lang, 'allCategories')} <span className={count}>{inGroup.length}</span>
+            {t(lang, 'allCategories')} <span className={count}>{opinions.length}</span>
           </button>
           {CATEGORIES.map((c) => (
             <button type="button" key={c} className={chip(category === c)} onClick={() => setCategory(c)}>

@@ -11,7 +11,7 @@ import { z } from 'zod';
 import * as admin from '@/lib/core/admin';
 import { CoreError } from '@/lib/core/errors';
 import * as participant from '@/lib/core/participant';
-import { getSession, listGroups, listOpinions, listProfiles, listSessions, type OpinionView } from '@/lib/data';
+import { getSession, listOpinions, listProfiles, listSessions, type OpinionView } from '@/lib/data';
 import { CATEGORIES } from '@/lib/i18n';
 import { toMarkdown } from '@/lib/report';
 
@@ -45,8 +45,6 @@ function opinionOut(o: OpinionView, withMine: boolean) {
   return {
     id: o.id,
     category: o.category,
-    group: o.groupName,
-    groupId: o.groupId,
     original: o.body,
     sourceLang: o.sourceLang,
     en: o.bodyEn,
@@ -59,18 +57,12 @@ function opinionOut(o: OpinionView, withMine: boolean) {
 
 const listFilter = {
   category: z.enum(CATEGORIES).optional().describe(CATEGORY_HELP),
-  group_id: z.string().uuid().optional().describe('Only posts from this group'),
   sort: z.enum(['new', 'top']).optional().describe('new = newest first (default), top = most +1 first'),
   limit: z.number().int().min(1).max(500).optional().describe('Max posts to return (default 100)'),
 };
 
-function filterOpinions(
-  items: OpinionView[],
-  f: { category?: string; group_id?: string; sort?: 'new' | 'top'; limit?: number },
-) {
-  let out = items.filter(
-    (o) => (!f.category || o.category === f.category) && (!f.group_id || o.groupId === f.group_id),
-  );
+function filterOpinions(items: OpinionView[], f: { category?: string; sort?: 'new' | 'top'; limit?: number }) {
+  let out = items.filter((o) => !f.category || o.category === f.category);
   if (f.sort === 'top') out = [...out].sort((a, b) => b.votes - a.votes);
   return out.slice(0, f.limit ?? 100);
 }
@@ -89,21 +81,17 @@ function registerParticipantTools(server: McpServer, p: participant.Participant)
     {
       title: 'Get the session',
       description:
-        'The session this token belongs to: title, whether it accepts posts, its groups (pass a group id to post_opinion), the AI summary if any, and how many posts you have left.',
+        'The session this token belongs to: title, whether it accepts posts, the AI summary if any, and how many posts you have left.',
       annotations: READ,
     },
     () =>
       handle('get_session', async () => {
         const { session } = await current();
-        const [groups, mine] = await Promise.all([
-          listGroups(sessionId),
-          listOpinions(sessionId, { authorKey: p.authorKey }),
-        ]);
+        const mine = await listOpinions(sessionId, { authorKey: p.authorKey });
         return {
           id: session.id,
           title: session.title,
           status: session.status,
-          groups: groups.map((g) => ({ id: g.id, name: g.name, language: g.language })),
           categories: CATEGORY_HELP,
           myPosts: mine.filter((o) => o.mine).length,
           maxPostsPerPerson: participant.MAX_OPINIONS_PER_PERSON,
@@ -138,27 +126,12 @@ function registerParticipantTools(server: McpServer, p: participant.Participant)
       inputSchema: {
         category: z.enum(CATEGORIES),
         body: z.string().min(1).max(participant.MAX_BODY),
-        group_id: z
-          .string()
-          .uuid()
-          .optional()
-          .describe('Your group (see get_session). May be omitted when the session has a single group.'),
       },
       annotations: WRITE,
     },
     (args) =>
       handle('post_opinion', async () => {
-        let groupId = args.group_id;
-        if (!groupId) {
-          const groups = await listGroups(sessionId);
-          if (groups.length !== 1) {
-            throw new CoreError(
-              `group_id is required; choose one of: ${groups.map((g) => `${g.name} (${g.language}) = ${g.id}`).join(', ')}`,
-            );
-          }
-          groupId = groups[0]!.id;
-        }
-        return participant.createOpinion(await current(), { groupId, category: args.category, body: args.body });
+        return participant.createOpinion(await current(), { category: args.category, body: args.body });
       }),
   );
 
@@ -273,7 +246,7 @@ function registerAdminTools(server: McpServer) {
     'admin_list_sessions',
     {
       title: 'List sessions',
-      description: 'Every session with its status, groups and post / profile counts.',
+      description: 'Every session with its status and post / profile counts.',
       annotations: READ,
     },
     () =>
@@ -281,16 +254,11 @@ function registerAdminTools(server: McpServer) {
         const sessions = await listSessions();
         return Promise.all(
           sessions.map(async (s) => {
-            const [groups, opinions, people] = await Promise.all([
-              listGroups(s.id),
-              listOpinions(s.id),
-              listProfiles(s.id),
-            ]);
+            const [opinions, people] = await Promise.all([listOpinions(s.id), listProfiles(s.id)]);
             return {
               id: s.id,
               title: s.title,
               status: s.status,
-              groups: groups.map((g) => ({ id: g.id, name: g.name, language: g.language })),
               posts: opinions.length,
               profiles: people.length,
               translations: s.translateCount ?? 0,
@@ -357,29 +325,6 @@ function registerAdminTools(server: McpServer) {
   );
 
   server.registerTool(
-    'admin_add_group',
-    {
-      title: 'Add a group',
-      description: 'Adds a table group to a session. language decides the UI language of people who pick it.',
-      inputSchema: { ...sessionArg, name: z.string().min(1).max(40), language: z.enum(['ja', 'en']) },
-      annotations: WRITE,
-    },
-    (args) =>
-      handle('admin_add_group', () => admin.addGroup(args.session_id, { name: args.name, language: args.language })),
-  );
-
-  server.registerTool(
-    'admin_delete_group',
-    {
-      title: 'Delete a group',
-      description: 'Deletes a group that has no posts.',
-      inputSchema: { ...sessionArg, group_id: z.string().uuid() },
-      annotations: DELETE,
-    },
-    (args) => handle('admin_delete_group', () => admin.deleteGroup(args.session_id, args.group_id)),
-  );
-
-  server.registerTool(
     'admin_delete_opinion',
     {
       title: 'Delete any post',
@@ -435,8 +380,8 @@ function registerAdminTools(server: McpServer) {
       try {
         const session = await getSession(args.session_id);
         if (!session) throw new CoreError('session not found');
-        const [groups, opinions] = await Promise.all([listGroups(session.id), listOpinions(session.id)]);
-        return { content: [{ type: 'text', text: toMarkdown(session, groups, opinions) }] };
+        const opinions = await listOpinions(session.id);
+        return { content: [{ type: 'text', text: toMarkdown(session, opinions) }] };
       } catch (e) {
         return handle('admin_export', () => Promise.reject(e));
       }
@@ -448,7 +393,7 @@ function registerAdminTools(server: McpServer) {
     {
       title: 'Delete a whole session',
       description:
-        'Permanently deletes a session with all its groups, posts, +1s and profiles. Cannot be undone. Pass the session id again as confirm_session_id.',
+        'Permanently deletes a session with all its posts, +1s and profiles. Cannot be undone. Pass the session id again as confirm_session_id.',
       inputSchema: { ...sessionArg, confirm_session_id: z.string() },
       annotations: DELETE,
     },
@@ -460,7 +405,7 @@ function registerAdminTools(server: McpServer) {
 export function createMcpServer(caller: Caller): McpServer {
   const instructions =
     caller.kind === 'admin'
-      ? 'CDK Lovers admin tools: manage sessions, groups, moderation and AI summaries for the CDK Lovers feedback board. Confirm with the user before any delete.'
+      ? 'CDK Lovers admin tools: manage sessions, moderation and AI summaries for the CDK Lovers feedback board. Confirm with the user before any delete.'
       : `CDK Lovers feedback board for session "${caller.participant.session.title}". Attendees post anonymous feedback about AWS CDK (auto-translated between Japanese and English), +1 each other's posts, and share a short profile. Post one thought per post, in the user's own words; ask the user before posting on their behalf.`;
   const server = new McpServer({ name: 'cdk-lovers', version: '1.0.0' }, { instructions });
   if (caller.kind === 'admin') registerAdminTools(server);

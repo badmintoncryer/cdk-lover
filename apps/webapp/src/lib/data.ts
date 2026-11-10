@@ -9,8 +9,6 @@ export type ProfileRow = typeof profiles.$inferSelect;
 /** What the browser receives: author keys are replaced by an `mine` flag. */
 export type OpinionView = {
   id: string;
-  groupId: string;
-  groupName: string;
   category: string;
   body: string;
   sourceLang: string;
@@ -36,13 +34,27 @@ export async function listGroups(sessionId: string): Promise<GroupRow[]> {
   return db.select().from(groups).where(eq(groups.sessionId, sessionId)).orderBy(asc(groups.createdAt));
 }
 
+/**
+ * Attendees no longer pick a table: seating changes all the time on the day. Opinions still need a
+ * group row (the column is NOT NULL and DSQL can't relax it), so each session gets one hidden group
+ * per language, created on first use.
+ */
+export async function languageGroupId(sessionId: string, lang: 'ja' | 'en'): Promise<string> {
+  const existing = (await listGroups(sessionId)).find((g) => g.language === lang);
+  if (existing) return existing.id;
+  const [row] = await db
+    .insert(groups)
+    .values({ sessionId, name: lang === 'ja' ? '日本語' : 'English', language: lang })
+    .returning({ id: groups.id });
+  return row!.id;
+}
+
 export async function listOpinions(
   sessionId: string,
   opts: { authorKey?: string; voterKey?: string } = {},
 ): Promise<OpinionView[]> {
-  const [rows, groupRows, voteCounts, myVotes] = await Promise.all([
+  const [rows, voteCounts, myVotes] = await Promise.all([
     db.select().from(opinions).where(eq(opinions.sessionId, sessionId)).orderBy(desc(opinions.createdAt)),
-    listGroups(sessionId),
     db
       .select({ opinionId: votes.opinionId, n: count() })
       .from(votes)
@@ -55,13 +67,10 @@ export async function listOpinions(
           .where(and(eq(votes.sessionId, sessionId), eq(votes.voterKey, opts.voterKey)))
       : Promise.resolve([]),
   ]);
-  const groupName = new Map(groupRows.map((g) => [g.id, g.name]));
   const voteMap = new Map(voteCounts.map((v) => [v.opinionId, Number(v.n)]));
   const mineVoted = new Set(myVotes.map((v) => v.opinionId));
   return rows.map((o) => ({
     id: o.id,
-    groupId: o.groupId,
-    groupName: groupName.get(o.groupId) ?? '-',
     category: o.category,
     body: o.body,
     sourceLang: o.sourceLang,

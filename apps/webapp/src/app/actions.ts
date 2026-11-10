@@ -5,8 +5,8 @@ import { z } from 'zod';
 import * as core from '@/lib/core/participant';
 import { CoreError } from '@/lib/core/errors';
 import { passphraseHash, safeEqual } from '@/lib/crypto';
-import { getSession, listGroups } from '@/lib/data';
-import { ensureParticipantId, isJoined, setGroupId, setJoined, setLangCookie } from '@/lib/identity';
+import { getSession } from '@/lib/data';
+import { ensureParticipantId, isJoined, setJoined, setLangCookie } from '@/lib/identity';
 import { isLang } from '@/lib/i18n';
 import { issueParticipantToken } from '@/lib/mcp-token';
 import { getSigningKey } from '@/lib/secrets';
@@ -50,30 +50,18 @@ export async function setLang(lang: string) {
 const joinSchema = z.object({
   sessionId: z.string().min(1).max(32),
   passphrase: z.string().min(1).max(200),
-  groupId: z.string().uuid(),
 });
 
 export async function joinSession(input: z.infer<typeof joinSchema>): Promise<ActionResult> {
   const parsed = joinSchema.safeParse(input);
   if (!parsed.success) return fail('invalid');
-  const { sessionId, passphrase, groupId } = parsed.data;
+  const { sessionId, passphrase } = parsed.data;
   const session = await getSession(sessionId);
   if (!session) return fail('session not found');
   const expected = passphraseHash(await getSigningKey(), sessionId, passphrase);
   if (!safeEqual(expected, session.passphraseHash)) return fail('wrong passphrase');
-  const groupRows = await listGroups(sessionId);
-  if (!groupRows.some((g) => g.id === groupId)) return fail('invalid');
   await ensureParticipantId();
   await setJoined(sessionId, session.passphraseHash);
-  await setGroupId(sessionId, groupId);
-  refresh(sessionId);
-  return { ok: true };
-}
-
-export async function changeGroup(sessionId: string, groupId: string): Promise<ActionResult> {
-  const groupRows = await listGroups(sessionId);
-  if (!groupRows.some((g) => g.id === groupId)) return fail('invalid');
-  await setGroupId(sessionId, groupId);
   refresh(sessionId);
   return { ok: true };
 }

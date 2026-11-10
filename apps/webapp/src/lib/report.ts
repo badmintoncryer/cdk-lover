@@ -1,4 +1,4 @@
-import type { GroupRow, OpinionView, SessionRow } from './data';
+import type { OpinionView, SessionRow } from './data';
 import { CATEGORIES } from './i18n';
 
 const LABEL: Record<string, string> = { good: 'What people love', bad: 'Pain points', wish: 'Wishes', other: 'Other' };
@@ -13,29 +13,16 @@ export function csvCell(v: string | number): string {
 }
 
 export function toCsv(opinions: OpinionView[]): string {
-  const header = ['category', 'group', 'votes', 'source_lang', 'original', 'english', 'japanese', 'created_at'];
-  const rows = opinions.map((o) => [
-    o.category,
-    o.groupName,
-    o.votes,
-    o.sourceLang,
-    o.body,
-    o.bodyEn,
-    o.bodyJa,
-    o.createdAt,
-  ]);
+  const header = ['category', 'votes', 'source_lang', 'original', 'english', 'japanese', 'created_at'];
+  const rows = opinions.map((o) => [o.category, o.votes, o.sourceLang, o.body, o.bodyEn, o.bodyJa, o.createdAt]);
   // BOM so Excel opens UTF-8 Japanese correctly.
   return '﻿' + [header, ...rows].map((r) => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
 }
 
-export function toMarkdown(session: SessionRow, groups: GroupRow[], opinions: OpinionView[]): string {
+export function toMarkdown(session: SessionRow, opinions: OpinionView[]): string {
   const out: string[] = [];
   out.push(`# CDK Lovers feedback report — ${session.title}`, '');
-  out.push(
-    `- Notes: ${opinions.length}`,
-    `- Groups: ${groups.map((g) => `${g.name} (${g.language})`).join(', ') || '-'}`,
-    '',
-  );
+  out.push(`- Notes: ${opinions.length}`, '');
   if (session.summaryEn) out.push('## AI summary (English)', '', session.summaryEn, '');
   if (session.summaryJa) out.push('## AI まとめ（日本語）', '', session.summaryJa, '');
   out.push('## All notes (sorted by +1)', '');
@@ -45,7 +32,7 @@ export function toMarkdown(session: SessionRow, groups: GroupRow[], opinions: Op
     out.push(`### ${LABEL[c]} (${items.length})`, '');
     for (const o of items) {
       const original = o.sourceLang === 'en' ? '' : ` _(original: ${o.body.replace(/\s+/g, ' ')})_`;
-      out.push(`- **+${o.votes}** [${o.groupName}] ${o.bodyEn.replace(/\s+/g, ' ')}${original}`);
+      out.push(`- **+${o.votes}** ${o.bodyEn.replace(/\s+/g, ' ')}${original}`);
     }
     out.push('');
   }
