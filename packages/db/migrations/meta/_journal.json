@@ -15,6 +15,13 @@
       "when": 1793894031674,
       "tag": "0001_session_translate_count",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794583803094,
+      "tag": "0002_session_phase",
+      "breakpoints": true
     }
   ]
 }

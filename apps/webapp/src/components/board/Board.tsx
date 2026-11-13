@@ -4,8 +4,9 @@ import { StickyNote } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { OpinionView } from '@/lib/data';
 import { CATEGORIES, categoryLabel, t, type Lang } from '@/lib/i18n';
+import { PHASE_INFO, type PhaseState } from '@/lib/phases';
 import { cn } from '@/lib/utils';
-import { CategoryDot } from './categories';
+import { CATEGORY_STYLE, CategoryDot } from './categories';
 import { Composer } from './Composer';
 import { OpinionCard } from './OpinionCard';
 
@@ -35,12 +36,14 @@ export function Board({
   canPost,
   canVote,
   opinions,
+  phase = null,
 }: {
   lang: Lang;
   sessionId: string;
   canPost: boolean;
   canVote: boolean;
   opinions: OpinionView[];
+  phase?: PhaseState;
 }) {
   const [category, setCategory] = useState<string>('all');
   const [sort, setSort] = useState<'new' | 'top'>('new');
@@ -54,7 +57,14 @@ export function Board({
 
   return (
     <div className="space-y-4">
-      {canPost && <Composer lang={lang} sessionId={sessionId} />}
+      {phase?.phase === 'share' && <ShareTop lang={lang} opinions={opinions} />}
+      {canPost && (
+        <Composer
+          lang={lang}
+          sessionId={sessionId}
+          phaseCategory={phase ? PHASE_INFO[phase.phase].category : undefined}
+        />
+      )}
 
       <div className="space-y-2">
         <ChipRow label={t(lang, 'category')}>
@@ -108,5 +118,42 @@ export function Board({
         </div>
       )}
     </div>
+  );
+}
+
+/** Share phase: the top notes per category, for the organizer to read out and the room to follow. */
+function ShareTop({ lang, opinions }: { lang: Lang; opinions: OpinionView[] }) {
+  const columns = CATEGORIES.map((c) => ({
+    c,
+    top: opinions
+      .filter((o) => o.category === c && o.votes > 0)
+      .sort((a, b) => b.votes - a.votes || a.createdAt.localeCompare(b.createdAt))
+      .slice(0, 3),
+  })).filter((col) => col.top.length > 0);
+  if (columns.length === 0) return null;
+  return (
+    <section className="space-y-3">
+      <h2 className="font-semibold">{t(lang, 'shareTitle')}</h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {columns.map(({ c, top }) => (
+          <div key={c} className="space-y-2">
+            <h3 className="flex items-center gap-2 text-sm font-medium">
+              <CategoryDot category={c} />
+              {categoryLabel(lang, c)}
+            </h3>
+            <ol className="space-y-2">
+              {top.map((o) => (
+                <li key={o.id} className={cn('flex gap-3 rounded-lg border border-t-4 p-3 text-sm', CATEGORY_STYLE[c])}>
+                  <span className="flex-1 break-words whitespace-pre-wrap text-slate-900">
+                    {lang === 'ja' ? o.bodyJa : o.bodyEn}
+                  </span>
+                  <span className="shrink-0 font-mono text-xs font-medium text-slate-700 tabular-nums">+{o.votes}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

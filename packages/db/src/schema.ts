@@ -18,6 +18,13 @@ export const sessions = pgTable('Session', {
    * cannot ADD COLUMN with a DEFAULT).
    */
   translateCount: integer('translateCount'),
+  /**
+   * The part of the meetup the organizer has switched to (see the webapp's `lib/phases.ts`), shown
+   * as a banner on every board. Null shows no banner.
+   */
+  phase: text('phase'),
+  /** When the current phase is planned to end; the banner counts down to it. */
+  phaseEndsAt: timestamp('phaseEndsAt', { withTimezone: true }),
   summarizedAt: timestamp('summarizedAt', { withTimezone: true }),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
 });

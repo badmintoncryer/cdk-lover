@@ -11,6 +11,7 @@ import { summarize } from '@/lib/ai';
 import { passphraseHash } from '@/lib/crypto';
 import { getSession, listOpinions } from '@/lib/data';
 import { notifySession } from '@/lib/events';
+import { isPhase, PHASE_INFO, type Phase } from '@/lib/phases';
 import { getSigningKey } from '@/lib/secrets';
 import { coreError } from './errors';
 
@@ -54,6 +55,35 @@ export async function upsertSession(input: z.infer<typeof sessionInput>): Promis
   }
   await refreshAdmin(id);
   return { created: !existing };
+}
+
+/**
+ * Switches the meetup to a phase (or clears the banner with null). The banner counts down from
+ * now for `minutes` (the phase's default when omitted; 0 shows no countdown).
+ */
+export async function setPhase(sessionId: string, phase: Phase | null, minutes?: number) {
+  if (phase !== null && !isPhase(phase)) throw coreError('unknown phase');
+  const session = await getSession(sessionId);
+  if (!session) throw coreError('session not found');
+  const mins = phase === null ? 0 : Math.max(0, Math.min(120, minutes ?? PHASE_INFO[phase].minutes));
+  await db
+    .update(sessions)
+    .set({ phase, phaseEndsAt: mins > 0 ? new Date(Date.now() + mins * 60_000) : null })
+    .where(eq(sessions.id, sessionId));
+  await refreshAdmin(sessionId);
+}
+
+/** Moves the current phase's end time by `minutes` (negative shortens). */
+export async function extendPhase(sessionId: string, minutes: number) {
+  const session = await getSession(sessionId);
+  if (!session) throw coreError('session not found');
+  if (!session.phase) throw coreError('no phase is on');
+  const base = Math.max(session.phaseEndsAt?.getTime() ?? 0, Date.now());
+  await db
+    .update(sessions)
+    .set({ phaseEndsAt: new Date(base + minutes * 60_000) })
+    .where(eq(sessions.id, sessionId));
+  await refreshAdmin(sessionId);
 }
 
 export async function deleteAnyOpinion(sessionId: string, opinionId: string) {
