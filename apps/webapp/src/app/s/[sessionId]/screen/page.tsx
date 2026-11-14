@@ -8,8 +8,10 @@ import { LiveRefresh } from '@/components/LiveRefresh';
 import { Markdown } from '@/components/Markdown';
 import { Logo } from '@/components/SiteHeader';
 import { CATEGORY_STYLE, CategoryDot } from '@/components/board/categories';
+import { PhaseBanner } from '@/components/phase/PhaseBanner';
 import { getSession, listOpinions } from '@/lib/data';
 import { CATEGORIES, categoryLabel, isLang, t } from '@/lib/i18n';
+import { phaseState } from '@/lib/phases';
 import { cn } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -109,6 +111,12 @@ export default async function ScreenPage({
         </Link>
         <FullscreenButton label={t(lang, 'fullscreen')} className={cn(tab(false), 'ml-1 py-1.5')} />
       </nav>
+
+      {session.status === 'open' && session.phase && (
+        <div className="px-6 pb-3 short:px-4 short:pb-2">
+          <PhaseBanner state={phaseState(session)} lang={lang} dark />
+        </div>
+      )}
 
       {view === 'summary' ? (
         <main className="min-h-0 flex-1 overflow-y-auto px-6 pb-8 short:px-4 short:pb-4">

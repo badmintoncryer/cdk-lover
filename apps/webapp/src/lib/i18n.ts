@@ -116,6 +116,21 @@ const dict = {
   copy: { ja: 'コピー', en: 'Copy' },
   copied: { ja: 'コピーしました', en: 'Copied' },
   error: { ja: 'エラーが発生しました', en: 'Something went wrong' },
+  joinIntro1: {
+    ja: 'AWS CDK チームに直接フィードバックを届ける 45 分のミートアップです。',
+    en: 'A 45-minute meetup to give feedback straight to the AWS CDK team.',
+  },
+  joinIntro2: {
+    ja: 'テーブルで話しながら、思ったことを 1 つずつ付箋として投稿します（日英は自動翻訳）。',
+    en: 'Talk at your table and post each thought as a note (auto-translated between English and Japanese).',
+  },
+  joinIntro3: {
+    ja: '共感した付箋に +1。+1 が多いものを最後に CDK チームと話します。',
+    en: '+1 the notes you agree with. The most +1-ed ones are discussed with the CDK team at the end.',
+  },
+  phaseNow: { ja: 'いまやること', en: 'Now' },
+  phasePostAs: { ja: 'カテゴリ', en: 'Post as' },
+  shareTitle: { ja: '+1 が多い付箋', en: 'Most +1-ed notes' },
 } as const;
 
 export type MessageKey = keyof typeof dict;

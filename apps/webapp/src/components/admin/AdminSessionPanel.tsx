@@ -9,8 +9,13 @@ import {
   clearSummary,
   deleteSessionData,
   runSummary,
+  setPhase,
+  stepPhase,
   type AdminResult,
 } from '@/app/admin/actions';
+import { formatLeft, useNowSeconds } from '@/components/phase/PhaseBanner';
+import { PHASE_INFO, PHASES, type PhaseState } from '@/lib/phases';
+import { cn } from '@/lib/utils';
 
 type Props = {
   sessionId: string;
@@ -18,9 +23,10 @@ type Props = {
   profiles: { id: string; name: string }[];
   summaryCount: number;
   hasSummary: boolean;
+  phase: PhaseState;
 };
 
-export function AdminSessionPanel({ sessionId, opinions, profiles, summaryCount, hasSummary }: Props) {
+export function AdminSessionPanel({ sessionId, opinions, profiles, summaryCount, hasSummary, phase }: Props) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [confirmId, setConfirmId] = useState('');
@@ -38,6 +44,8 @@ export function AdminSessionPanel({ sessionId, opinions, profiles, summaryCount,
 
   return (
     <div className="space-y-5">
+      <PhaseControl sessionId={sessionId} stored={phase} pending={pending} run={run} btn={btn} card={card} />
+
       <section className={card}>
         <h2 className="font-bold">AI summary & report</h2>
         <div className="flex flex-wrap gap-2">
@@ -128,5 +136,84 @@ export function AdminSessionPanel({ sessionId, opinions, profiles, summaryCount,
         </div>
       </section>
     </div>
+  );
+}
+
+/**
+ * The organizer runs the meetup: Next when the room is ready, Back to undo, Stop to hide the
+ * banner. Nothing moves on its own; the planned minutes only show as time left (or overtime).
+ */
+function PhaseControl({
+  sessionId,
+  stored,
+  pending,
+  run,
+  btn,
+  card,
+}: {
+  sessionId: string;
+  stored: PhaseState;
+  pending: boolean;
+  run: (fn: () => Promise<AdminResult | void>, ok?: string) => void;
+  btn: string;
+  card: string;
+}) {
+  const now = useNowSeconds();
+  const index = stored ? PHASES.indexOf(stored.phase) : -1;
+  const next = PHASES[index + 1];
+  const end = stored?.endsAt ? Math.floor(new Date(stored.endsAt).getTime() / 1000) : null;
+  const diff = end !== null && now !== null ? end - now : null;
+  return (
+    <section className={card}>
+      <div className="flex flex-wrap items-baseline gap-x-3">
+        <h2 className="font-bold">Agenda banner</h2>
+        <p className="text-xs text-slate-500">
+          Shows the current part on every board. It never moves on by itself: press Next when the room is ready. The
+          minutes are only a guide.
+        </p>
+      </div>
+      <ol className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        {PHASES.map((p, i) => (
+          <li key={p} className={cn(i === index ? 'font-bold' : i < index ? 'text-slate-400' : 'text-slate-600')}>
+            {i + 1}. {PHASE_INFO[p].name.en}
+            {i === index && diff !== null && (
+              <span
+                className={cn(
+                  'ml-1.5 font-mono font-normal tabular-nums',
+                  diff < 0 ? 'text-amber-600' : 'text-slate-500',
+                )}
+              >
+                {diff >= 0 ? `${formatLeft(diff)} left` : `+${formatLeft(-diff)} over`}
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+      <div className="flex flex-wrap gap-2">
+        <button
+          disabled={pending || index <= 0}
+          className={`${btn} border bg-card hover:bg-accent`}
+          onClick={() => run(() => stepPhase(sessionId, -1), 'Back')}
+        >
+          ← Back
+        </button>
+        <button
+          disabled={pending || !next}
+          className={`${btn} h-11 bg-primary px-5 text-base text-primary-foreground hover:bg-primary/90`}
+          onClick={() => run(() => stepPhase(sessionId, 1), next ? PHASE_INFO[next].name.en : 'Done')}
+        >
+          {next ? `${index < 0 ? 'Start' : 'Next'}: ${PHASE_INFO[next].name.en} →` : 'Last part'}
+        </button>
+        {stored && (
+          <button
+            disabled={pending}
+            className={`${btn} border bg-card hover:bg-accent`}
+            onClick={() => run(() => setPhase(sessionId, null), 'Banner hidden')}
+          >
+            Stop
+          </button>
+        )}
+      </div>
+    </section>
   );
 }
