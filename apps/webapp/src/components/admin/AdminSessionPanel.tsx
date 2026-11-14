@@ -8,13 +8,13 @@ import {
   adminDeleteProfile,
   clearSummary,
   deleteSessionData,
-  nextPhase,
   runSummary,
   setPhase,
+  stepPhase,
   type AdminResult,
 } from '@/app/admin/actions';
-import { useCurrentPhase } from '@/components/phase/PhaseBanner';
-import { PHASE_INFO, schedule, type PhaseState } from '@/lib/phases';
+import { formatLeft, useNowSeconds } from '@/components/phase/PhaseBanner';
+import { PHASE_INFO, PHASES, type PhaseState } from '@/lib/phases';
 import { cn } from '@/lib/utils';
 
 type Props = {
@@ -139,11 +139,9 @@ export function AdminSessionPanel({ sessionId, opinions, profiles, summaryCount,
   );
 }
 
-const time = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
 /**
- * Start once and the parts run by the clock; Next only cuts a part short. Kept small on purpose:
- * the meetup must run fine even if nobody touches this page after Start.
+ * The organizer runs the meetup: Next when the room is ready, Back to undo, Stop to hide the
+ * banner. Nothing moves on its own; the planned minutes only show as time left (or overtime).
  */
 function PhaseControl({
   sessionId,
@@ -160,47 +158,53 @@ function PhaseControl({
   btn: string;
   card: string;
 }) {
-  const now = useCurrentPhase(stored);
-  const plan = schedule(now);
-  const last = now?.phase === 'done';
+  const now = useNowSeconds();
+  const index = stored ? PHASES.indexOf(stored.phase) : -1;
+  const next = PHASES[index + 1];
+  const end = stored?.endsAt ? Math.floor(new Date(stored.endsAt).getTime() / 1000) : null;
+  const diff = end !== null && now !== null ? end - now : null;
   return (
     <section className={card}>
       <div className="flex flex-wrap items-baseline gap-x-3">
         <h2 className="font-bold">Agenda banner</h2>
         <p className="text-xs text-slate-500">
-          Press Start when the meetup begins. Each part then moves on by itself after its planned minutes and every
-          board shows what to do now. Use Next only to end a part early.
+          Shows the current part on every board. It never moves on by itself: press Next when the room is ready. The
+          minutes are only a guide.
         </p>
       </div>
-      {now && plan.length > 0 && (
-        <ol className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-          {plan.map(({ phase: p, startsAt }) => (
-            <li key={p} className={cn(p === now.phase ? 'font-bold' : 'text-slate-500')}>
-              {time(startsAt)} {PHASE_INFO[p].name.en}
-            </li>
-          ))}
-        </ol>
-      )}
-      {now && last && <p className="text-sm">Showing: {PHASE_INFO.done.name.en}</p>}
+      <ol className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        {PHASES.map((p, i) => (
+          <li key={p} className={cn(i === index ? 'font-bold' : i < index ? 'text-slate-400' : 'text-slate-600')}>
+            {i + 1}. {PHASE_INFO[p].name.en}
+            {i === index && diff !== null && (
+              <span
+                className={cn(
+                  'ml-1.5 font-mono font-normal tabular-nums',
+                  diff < 0 ? 'text-amber-600' : 'text-slate-500',
+                )}
+              >
+                {diff >= 0 ? `${formatLeft(diff)} left` : `+${formatLeft(-diff)} over`}
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
       <div className="flex flex-wrap gap-2">
-        {!now ? (
-          <button
-            disabled={pending}
-            className={`${btn} bg-primary text-primary-foreground hover:bg-primary/90`}
-            onClick={() => run(() => setPhase(sessionId, 'welcome'), 'Started')}
-          >
-            Start
-          </button>
-        ) : (
-          <button
-            disabled={pending || last}
-            className={`${btn} bg-primary text-primary-foreground hover:bg-primary/90`}
-            onClick={() => run(() => nextPhase(sessionId), 'Moved to the next part')}
-          >
-            Next part
-          </button>
-        )}
-        {now && (
+        <button
+          disabled={pending || index <= 0}
+          className={`${btn} border bg-card hover:bg-accent`}
+          onClick={() => run(() => stepPhase(sessionId, -1), 'Back')}
+        >
+          ← Back
+        </button>
+        <button
+          disabled={pending || !next}
+          className={`${btn} h-11 bg-primary px-5 text-base text-primary-foreground hover:bg-primary/90`}
+          onClick={() => run(() => stepPhase(sessionId, 1), next ? PHASE_INFO[next].name.en : 'Done')}
+        >
+          {next ? `${index < 0 ? 'Start' : 'Next'}: ${PHASE_INFO[next].name.en} →` : 'Last part'}
+        </button>
+        {stored && (
           <button
             disabled={pending}
             className={`${btn} border bg-card hover:bg-accent`}

@@ -5,7 +5,7 @@ import { SessionForm } from '@/components/admin/SessionForm';
 import { Markdown } from '@/components/Markdown';
 import { getSession, listOpinions, listProfiles } from '@/lib/data';
 import { isAdmin } from '@/lib/identity';
-import { livePhase } from '@/lib/phases';
+import { phaseState } from '@/lib/phases';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +15,7 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ s
   const session = await getSession(sessionId);
   if (!session) notFound();
   const [opinions, profiles] = await Promise.all([listOpinions(sessionId), listProfiles(sessionId)]);
-  const phase = livePhase(session);
+  const phase = phaseState(session);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 space-y-5">

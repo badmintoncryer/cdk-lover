@@ -11,7 +11,7 @@ import { CATEGORY_STYLE, CategoryDot } from '@/components/board/categories';
 import { PhaseBanner } from '@/components/phase/PhaseBanner';
 import { getSession, listOpinions } from '@/lib/data';
 import { CATEGORIES, categoryLabel, isLang, t } from '@/lib/i18n';
-import { livePhase } from '@/lib/phases';
+import { phaseState } from '@/lib/phases';
 import { cn } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -114,7 +114,7 @@ export default async function ScreenPage({
 
       {session.status === 'open' && session.phase && (
         <div className="px-6 pb-3 short:px-4 short:pb-2">
-          <PhaseBanner state={livePhase(session)} lang={lang} dark />
+          <PhaseBanner state={phaseState(session)} lang={lang} dark />
         </div>
       )}
 

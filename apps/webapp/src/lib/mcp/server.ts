@@ -13,7 +13,7 @@ import { CoreError } from '@/lib/core/errors';
 import * as participant from '@/lib/core/participant';
 import { getSession, listOpinions, listProfiles, listSessions, type OpinionView } from '@/lib/data';
 import { CATEGORIES } from '@/lib/i18n';
-import { livePhase, PHASE_INFO, PHASES } from '@/lib/phases';
+import { PHASE_INFO, PHASES, phaseState } from '@/lib/phases';
 import { toMarkdown } from '@/lib/report';
 
 export type Caller = { kind: 'participant'; participant: participant.Participant } | { kind: 'admin' };
@@ -330,7 +330,7 @@ function registerAdminTools(server: McpServer) {
     'admin_set_phase',
     {
       title: 'Switch the meetup phase',
-      description: `Starts the agenda banner (current question, category and countdown) on every board and the screen at a part; the following parts then advance by themselves after their planned minutes. Parts in order: ${PHASES.join(', ')}. Start with "welcome"; pass a later part to skip ahead, or "none" to hide the banner. minutes overrides the given part's length.`,
+      description: `Shows a part of the meetup (its question, category and a guide time left) at the top of every board and the screen. Parts never advance on their own; call again to move on. Parts in order: ${PHASES.join(', ')}. Pass "none" to hide the banner. minutes overrides the part's planned length (the guide only).`,
       inputSchema: {
         ...sessionArg,
         phase: z.enum([...PHASES, 'none']),
@@ -435,7 +435,7 @@ export function createMcpServer(caller: Caller): McpServer {
 
 /** The organizer's current phase in plain words, so an assistant can tell the attendee what to do now. */
 function phaseNow(session: { phase: string | null; phaseEndsAt: Date | null }) {
-  const state = livePhase(session);
+  const state = phaseState(session);
   if (!state) return null;
   const info = PHASE_INFO[state.phase];
   return {

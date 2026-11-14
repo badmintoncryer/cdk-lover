@@ -11,7 +11,7 @@ import { summarize } from '@/lib/ai';
 import { passphraseHash } from '@/lib/crypto';
 import { getSession, listOpinions } from '@/lib/data';
 import { notifySession } from '@/lib/events';
-import { currentPhase, isPhase, PHASE_INFO, PHASES, phaseState, type Phase } from '@/lib/phases';
+import { isPhase, PHASE_INFO, PHASES, type Phase } from '@/lib/phases';
 import { getSigningKey } from '@/lib/secrets';
 import { coreError } from './errors';
 
@@ -58,8 +58,8 @@ export async function upsertSession(input: z.infer<typeof sessionInput>): Promis
 }
 
 /**
- * Starts the meetup at a part (or clears the banner with null). That part runs for `minutes` (its
- * planned length when omitted) and the following parts then advance on their own by the clock.
+ * Shows a part on every board (or clears the banner with null). `minutes` (the part's planned length
+ * when omitted) only sets the guide time left; nothing advances until the organizer says so.
  */
 export async function setPhase(sessionId: string, phase: Phase | null, minutes?: number) {
   if (phase !== null && !isPhase(phase)) throw coreError('unknown phase');
@@ -73,14 +73,14 @@ export async function setPhase(sessionId: string, phase: Phase | null, minutes?:
   await refreshAdmin(sessionId);
 }
 
-/** Ends the part that is on now and starts the next one (the clock keeps going from there). */
-export async function nextPhase(sessionId: string) {
+/** Moves to the next (1) or previous (-1) part; Next with nothing on starts the meetup. */
+export async function stepPhase(sessionId: string, step: 1 | -1) {
   const session = await getSession(sessionId);
   if (!session) throw coreError('session not found');
-  const now = currentPhase(phaseState(session), Date.now());
-  const next = now ? PHASES[PHASES.indexOf(now.phase) + 1] : 'welcome';
-  if (!next) throw coreError('already at the last part');
-  await setPhase(sessionId, next);
+  const index = isPhase(session.phase) ? PHASES.indexOf(session.phase) + step : step === 1 ? 0 : -1;
+  const target = PHASES[index];
+  if (!target) throw coreError(step === 1 ? 'already at the last part' : 'already at the first part');
+  await setPhase(sessionId, target);
 }
 
 export async function deleteAnyOpinion(sessionId: string, opinionId: string) {

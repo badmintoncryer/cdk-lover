@@ -7,7 +7,6 @@ import { CATEGORIES, categoryLabel, t, type Lang } from '@/lib/i18n';
 import { PHASE_INFO, type PhaseState } from '@/lib/phases';
 import { cn } from '@/lib/utils';
 import { CATEGORY_STYLE, CategoryDot } from './categories';
-import { useCurrentPhase } from '@/components/phase/PhaseBanner';
 import { Composer } from './Composer';
 import { OpinionCard } from './OpinionCard';
 
@@ -37,7 +36,7 @@ export function Board({
   canPost,
   canVote,
   opinions,
-  phase: storedPhase = null,
+  phase = null,
 }: {
   lang: Lang;
   sessionId: string;
@@ -46,7 +45,6 @@ export function Board({
   opinions: OpinionView[];
   phase?: PhaseState;
 }) {
-  const phase = useCurrentPhase(storedPhase);
   const [category, setCategory] = useState<string>('all');
   const [sort, setSort] = useState<'new' | 'top'>('new');
 

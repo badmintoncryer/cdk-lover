@@ -4,7 +4,7 @@ import { Timer } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
 import { CategoryDot } from '@/components/board/categories';
 import { categoryLabel, t, type Lang } from '@/lib/i18n';
-import { currentPhase, PHASE_INFO, PHASES, type PhaseState } from '@/lib/phases';
+import { PHASE_INFO, PHASES, type PhaseState } from '@/lib/phases';
 import { cn } from '@/lib/utils';
 
 /** A one-second clock shared by every countdown on the page. Null on the server so hydration matches. */
@@ -17,20 +17,11 @@ const clock = {
   server: () => null,
 };
 
-function useNowSeconds(): number | null {
+export function useNowSeconds(): number | null {
   return useSyncExternalStore(clock.subscribe, clock.now, clock.server);
 }
 
-/**
- * The part that is on now, moving on by the clock. Pass the state the server already advanced to
- * render time, so the first (hydrating) render matches the server's.
- */
-export function useCurrentPhase(state: PhaseState): PhaseState {
-  const now = useNowSeconds();
-  return now === null ? state : currentPhase(state, now * 1000);
-}
-
-function formatLeft(seconds: number) {
+export function formatLeft(seconds: number) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
@@ -38,11 +29,10 @@ function formatLeft(seconds: number) {
 
 /**
  * What the room is doing now. There is no projector, so this banner (on every phone) is the agenda
- * slide: step, question, category and time left. It moves to the next part by itself.
+ * slide: step, question, category and a rough time left. The organizer moves it on.
  */
-export function PhaseBanner({ state: stored, lang, dark = false }: { state: PhaseState; lang: Lang; dark?: boolean }) {
+export function PhaseBanner({ state, lang, dark = false }: { state: PhaseState; lang: Lang; dark?: boolean }) {
   const now = useNowSeconds();
-  const state = useCurrentPhase(stored);
   if (!state) return null;
   const info = PHASE_INFO[state.phase];
   const index = PHASES.indexOf(state.phase);
@@ -61,7 +51,7 @@ export function PhaseBanner({ state: stored, lang, dark = false }: { state: Phas
         <span className={cn('uppercase tracking-wide', dark ? 'text-slate-400' : 'text-muted-foreground')}>
           {t(lang, 'phaseNow')} · {index + 1}/{PHASES.length} {info.name[lang]}
         </span>
-        {left !== null && (
+        {left !== null && left > 0 && (
           <span
             className={cn(
               'ml-auto inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-sm tabular-nums',
