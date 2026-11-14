@@ -129,7 +129,6 @@ const dict = {
     en: '+1 the notes you agree with. The most +1-ed ones are discussed with the CDK team at the end.',
   },
   phaseNow: { ja: 'いまやること', en: 'Now' },
-  phaseTimeUp: { ja: '時間です', en: "Time's up" },
   phasePostAs: { ja: 'カテゴリ', en: 'Post as' },
   shareTitle: { ja: '+1 が多い付箋', en: 'Most +1-ed notes' },
 } as const;

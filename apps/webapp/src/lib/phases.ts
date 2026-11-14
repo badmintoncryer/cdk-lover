@@ -1,9 +1,10 @@
 import type { Category, Lang } from './i18n';
 
 /**
- * The parts of the 45-minute meetup. There is no projector, so the organizer switches the phase
- * from the admin page and every attendee's board shows what to do now. Latecomers (the meetup is
- * walk-up only) catch up from the same banner.
+ * The parts of the 45-minute meetup. There is no projector, so every attendee's board shows what to
+ * do now. The organizer presses Start once; after that the parts advance by the clock using their
+ * planned minutes, so running the room never depends on someone tapping the admin page. "Next"
+ * cuts the current part short when a discussion dries up. Latecomers catch up from the same banner.
  */
 export const PHASES = ['welcome', 'good', 'bad', 'wish', 'share', 'qa', 'done'] as const;
 export type Phase = (typeof PHASES)[number];
@@ -92,10 +93,47 @@ export const PHASE_INFO: Record<Phase, PhaseInfo> = {
 
 export const isPhase = (v: unknown): v is Phase => typeof v === 'string' && (PHASES as readonly string[]).includes(v);
 
-/** What a board needs to render the banner; plain values so it can cross to client components. */
+/**
+ * The organizer's last action, as stored: the part they started (or skipped to) and when it ends.
+ * Plain values so it can cross to client components. Use `currentPhase` for what is on now.
+ */
 export type PhaseState = { phase: Phase; endsAt: string | null } | null;
 
 export function phaseState(session: { phase: string | null; phaseEndsAt: Date | null }): PhaseState {
   if (!isPhase(session.phase)) return null;
   return { phase: session.phase, endsAt: session.phaseEndsAt?.toISOString() ?? null };
+}
+
+/**
+ * What is on at `now`: walks forward from the stored part by the planned minutes. The last part
+ * (`done`, 0 minutes) has no end and stays on.
+ */
+export function currentPhase(state: PhaseState, now: number): PhaseState {
+  if (!state) return null;
+  let index = PHASES.indexOf(state.phase);
+  let end = state.endsAt ? new Date(state.endsAt).getTime() : null;
+  while (end !== null && now >= end && index < PHASES.length - 1) {
+    index += 1;
+    const minutes = PHASE_INFO[PHASES[index]].minutes;
+    end = minutes > 0 ? end + minutes * 60_000 : null;
+  }
+  return { phase: PHASES[index], endsAt: end === null ? null : new Date(end).toISOString() };
+}
+
+/** Planned start time of every part from the stored state on (for the organizer's schedule). */
+export function schedule(state: PhaseState): { phase: Phase; startsAt: string }[] {
+  if (!state?.endsAt) return [];
+  const out: { phase: Phase; startsAt: string }[] = [];
+  const first = PHASES.indexOf(state.phase);
+  let start = new Date(state.endsAt).getTime() - PHASE_INFO[state.phase].minutes * 60_000;
+  for (let i = first; i < PHASES.length; i++) {
+    out.push({ phase: PHASES[i], startsAt: new Date(start).toISOString() });
+    start += PHASE_INFO[PHASES[i]].minutes * 60_000;
+  }
+  return out;
+}
+
+/** What is on right now for a stored session row (server render; clients keep it moving). */
+export function livePhase(session: { phase: string | null; phaseEndsAt: Date | null }): PhaseState {
+  return currentPhase(phaseState(session), Date.now());
 }

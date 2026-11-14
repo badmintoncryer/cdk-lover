@@ -49,8 +49,8 @@ export async function setPhase(sessionId: string, phase: Phase | null): Promise<
   return asAdmin(() => core.setPhase(sessionId, phase));
 }
 
-export async function extendPhase(sessionId: string, minutes: number): Promise<AdminResult> {
-  return asAdmin(() => core.extendPhase(sessionId, minutes));
+export async function nextPhase(sessionId: string): Promise<AdminResult> {
+  return asAdmin(() => core.nextPhase(sessionId));
 }
 
 export async function adminDeleteOpinion(sessionId: string, opinionId: string): Promise<AdminResult> {

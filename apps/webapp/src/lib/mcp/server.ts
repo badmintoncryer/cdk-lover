@@ -13,7 +13,7 @@ import { CoreError } from '@/lib/core/errors';
 import * as participant from '@/lib/core/participant';
 import { getSession, listOpinions, listProfiles, listSessions, type OpinionView } from '@/lib/data';
 import { CATEGORIES } from '@/lib/i18n';
-import { PHASE_INFO, PHASES, phaseState } from '@/lib/phases';
+import { livePhase, PHASE_INFO, PHASES } from '@/lib/phases';
 import { toMarkdown } from '@/lib/report';
 
 export type Caller = { kind: 'participant'; participant: participant.Participant } | { kind: 'admin' };
@@ -97,7 +97,7 @@ function registerParticipantTools(server: McpServer, p: participant.Participant)
           myPosts: mine.filter((o) => o.mine).length,
           maxPostsPerPerson: participant.MAX_OPINIONS_PER_PERSON,
           summary: session.summaryEn ? { en: session.summaryEn, ja: session.summaryJa } : null,
-          now: currentPhase(session),
+          now: phaseNow(session),
         };
       }),
   );
@@ -330,7 +330,7 @@ function registerAdminTools(server: McpServer) {
     'admin_set_phase',
     {
       title: 'Switch the meetup phase',
-      description: `Shows a phase banner (current question, category and countdown) on every board and the screen. Phases in order: ${PHASES.join(', ')}. Pass phase "none" to hide the banner. minutes defaults to the phase's planned length.`,
+      description: `Starts the agenda banner (current question, category and countdown) on every board and the screen at a part; the following parts then advance by themselves after their planned minutes. Parts in order: ${PHASES.join(', ')}. Start with "welcome"; pass a later part to skip ahead, or "none" to hide the banner. minutes overrides the given part's length.`,
       inputSchema: {
         ...sessionArg,
         phase: z.enum([...PHASES, 'none']),
@@ -434,8 +434,8 @@ export function createMcpServer(caller: Caller): McpServer {
 }
 
 /** The organizer's current phase in plain words, so an assistant can tell the attendee what to do now. */
-function currentPhase(session: { phase: string | null; phaseEndsAt: Date | null }) {
-  const state = phaseState(session);
+function phaseNow(session: { phase: string | null; phaseEndsAt: Date | null }) {
+  const state = livePhase(session);
   if (!state) return null;
   const info = PHASE_INFO[state.phase];
   return {
