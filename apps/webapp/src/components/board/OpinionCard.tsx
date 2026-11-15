@@ -78,7 +78,7 @@ export function OpinionCard({
                 key={c}
                 onClick={() => setCategory(c)}
                 className={cn(
-                  'flex items-center gap-2 rounded-md border px-2 py-1 text-xs font-medium',
+                  'flex h-9 items-center gap-2 rounded-md border px-2.5 text-sm font-medium sm:h-8 sm:text-xs',
                   category === c ? CATEGORY_SELECTED[c] : 'bg-white',
                 )}
               >

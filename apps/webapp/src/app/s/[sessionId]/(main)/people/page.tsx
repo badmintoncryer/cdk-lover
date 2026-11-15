@@ -21,7 +21,7 @@ export default async function PeoplePage({ params }: { params: Promise<{ session
   return (
     <div className="space-y-5">
       <OrganizerCard lang={lang} />
-      <div className="grid items-start gap-5 lg:grid-cols-[360px_1fr]">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
         <section className="lg:sticky lg:top-20">
           {joined ? (
             // Keyed so the form resets after the profile is saved or deleted elsewhere.

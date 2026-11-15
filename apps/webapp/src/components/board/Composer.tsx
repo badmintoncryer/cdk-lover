@@ -77,11 +77,13 @@ export function Composer({ lang, sessionId }: { lang: Lang; sessionId: string })
 
         <PublicNotice>{t(lang, 'anonymousNote')}</PublicNotice>
 
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <p className="hidden text-xs text-muted-foreground sm:block">{t(lang, 'sendHint')}</p>
           <span
             className={cn(
-              'ml-auto hidden text-xs tabular-nums sm:inline',
+              'ml-auto text-xs tabular-nums sm:inline',
+              // Phones have no room to spare, so the counter only appears once the limit is in sight.
+              body.length > MAX - 100 ? 'inline' : 'hidden',
               body.length > MAX - 40 ? 'text-rose-600' : 'text-muted-foreground',
             )}
           >

@@ -49,7 +49,7 @@ export default async function AdminSessionPage({ params }: { params: Promise<{ s
       />
 
       {session.summaryEn && (
-        <section className="grid gap-4 md:grid-cols-2">
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="rounded-2xl border bg-card p-5 text-sm shadow-sm">
             <Markdown text={session.summaryEn} />
           </div>
