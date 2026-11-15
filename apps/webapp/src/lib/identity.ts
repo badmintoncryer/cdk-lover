@@ -1,4 +1,4 @@
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import { randomUUID } from 'node:crypto';
 import { getAdminPassword, getSigningKey } from './secrets';
 import { joinToken, purposeKey, safeEqual, verifyAdminToken } from './crypto';
@@ -13,11 +13,10 @@ const joinCookie = (sessionId: string) => `cl_join_${sessionId}`;
 const MAX_AGE = 60 * 60 * 24 * 30;
 const baseCookie = { httpOnly: true, secure: true, sameSite: 'lax' as const, path: '/', maxAge: MAX_AGE };
 
+/** English unless the visitor picked a language with the toggle (the event is at re:Invent). */
 export async function getLang(): Promise<Lang> {
   const c = (await cookies()).get(LANG)?.value;
-  if (isLang(c)) return c;
-  const al = (await headers()).get('accept-language') ?? '';
-  return al.toLowerCase().startsWith('ja') ? 'ja' : 'en';
+  return isLang(c) ? c : 'en';
 }
 
 export async function setLangCookie(lang: Lang) {
