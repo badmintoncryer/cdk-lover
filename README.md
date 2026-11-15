@@ -82,32 +82,16 @@ pnpm exec cdk deploy --all
 デプロイ後に一度だけやること:
 
 1. Bedrock コンソールで、使うモデルが呼び出せる状態か確認する（Nova はアカウントで有効化済みなら追加作業なし）。
-2. IP 制限に自分の IP を登録する（下記）。登録するまでは誰もアクセスできません。
-
-### IP 制限（本番前の保護）
-
-既定で、CloudFront Function と KeyValueStore による IPv4 の許可リストが有効です（WAF は不要です）。リストはデプロイせずに数秒で書き換えられます。
-
-```bash
-cd apps/cdk
-scripts/allow-ip.sh                      # 今の自分のグローバル IPv4 だけを許可
-scripts/allow-ip.sh 203.0.113.7,198.51.100.0/24
-scripts/allow-ip.sh show                 # 現在のリストを表示
-scripts/allow-ip.sh open                 # 全員に公開（当日）
-```
-
-IP が変わったら `scripts/allow-ip.sh` を実行し直してください。制限中は IPv6 を無効にしています。機能自体を外すには `-c ipRestriction=false` でデプロイします。
 
 ## 当日の手順
 
-0. `apps/cdk/scripts/allow-ip.sh open` で全員に公開する。
 1. `/admin` にログインし、回を作る（例: ID `1130`、パスフレーズ、受付 open）。
 2. スクリーンに `/s/1130/screen` を映す（なければ参加者が各自のスマホで開く）。QR から参加し、口頭でパスフレーズを伝える。テーブルの登録はありません。
 3. ディスカッション中はボードに投稿してもらう。スクリーンは日本語・英語で切り替えられます。
 4. 最後に管理画面で「Generate summary」→ スクリーンの「AI summary」タブを CDK チームに見せる。
 5. 終わったら受付を closed にし、「Download report (.md)」でレポートを保存。
 
-パスフレーズを変えると、その回に参加済みのブラウザは再入力が必要になります（漏れたときの対処に使えます）。
+サイトは誰でも開けるので、パスフレーズは推測しにくいもの（例: `blue-lambda-42` のような単語2つ + 数字）にしてください。パスフレーズを変えると、その回に参加済みのブラウザは再入力が必要になります（漏れたときの対処に使えます）。
 
 ## MCP サーバー
 
@@ -121,7 +105,7 @@ IP が変わったら `scripts/allow-ip.sh` を実行し直してください。
 - 参加者トークンはブラウザと同じ匿名 ID として扱われるので、MCP で書いた意見を画面から編集でき、その逆もできます。有効期限は 14 日で、回のパスフレーズを変えるとその回のトークンはすべて無効になります。
 - 管理者トークンは Secrets Manager のシークレット `McpAdminToken` です。ローテートすると古いトークンは使えなくなります。
 - トークンは URL のパス `/api/mcp/<token>` で渡します。`Authorization` ヘッダーは使えません。CloudFront が Lambda Function URL を呼ぶとき（OAC + IAM 認証）に、自分の SigV4 署名で上書きするためです。
-- `/api/mcp` も IP 制限の対象です。claude.ai / Claude Desktop のカスタムコネクタは Anthropic のクラウドから接続してくるので、制限中は使えません。制限中に使えるのは、許可した IP の PC から接続する Claude Code だけです。`allow-ip.sh open` の後はどのクライアントからも使えます。
+- claude.ai / Claude Desktop のカスタムコネクタ、Claude Code のどれからでも接続できます。
 
 管理者として Claude Code から使う例:
 

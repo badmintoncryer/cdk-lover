@@ -11,7 +11,6 @@ import { Webapp } from './constructs/webapp';
 import { EdgeFunction } from './constructs/cf-lambda-furl-service/edge-function';
 import { EventBus } from './constructs/event-bus/';
 import { DsqlMigrator } from './constructs/dsql-migrator/';
-import { IpAllowlist } from './constructs/ip-allowlist';
 import type { CustomDomain } from './us-east-1-stack';
 
 interface MainStackProps extends StackProps {
@@ -51,14 +50,6 @@ interface MainStackProps extends StackProps {
    * @default 20
    */
   readonly budgetUsd?: number;
-
-  /**
-   * Only let listed IPv4 addresses reach the site (CloudFront Function + KeyValueStore). Set the
-   * list with `scripts/allow-ip.sh` after deploy (no redeploy needed); `open` allows everyone.
-   *
-   * @default false
-   */
-  readonly ipRestriction?: boolean;
 
   /**
    * Serve the site at this domain. `certificate` (from the us-east-1 stack) is required with it.
@@ -118,8 +109,6 @@ export class MainStack extends Stack {
         })
       : undefined;
 
-    const allowlist = props.ipRestriction ? new IpAllowlist(this, 'IpAllowlist') : undefined;
-
     const webapp = new Webapp(this, 'Webapp', {
       database,
       signPayloadHandler: props.signPayloadHandler,
@@ -134,8 +123,6 @@ export class MainStack extends Stack {
       geoRestriction: props.geoRestriction,
       hostedZone,
       certificate: props.certificate,
-      // The allowlist matches IPv4 only, so viewers must not arrive over IPv6 while it is on.
-      ...(allowlist ? { functionAssociations: [allowlist.association], enableIpv6: false } : {}),
     });
 
     new DsqlMigrator(this, 'DsqlMigrator', { database });

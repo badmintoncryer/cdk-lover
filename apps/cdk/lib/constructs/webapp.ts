@@ -6,7 +6,7 @@ import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { CloudFrontLambdaFunctionUrlService } from './cf-lambda-furl-service/service';
-import { type FunctionAssociation, GeoRestriction } from 'aws-cdk-lib/aws-cloudfront';
+import { GeoRestriction } from 'aws-cdk-lib/aws-cloudfront';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { IHostedZone } from 'aws-cdk-lib/aws-route53';
 import { ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
@@ -31,8 +31,6 @@ export interface WebappProps {
   summaryModelId: string;
   webAclId?: string;
   geoRestriction?: GeoRestriction;
-  functionAssociations?: FunctionAssociation[];
-  enableIpv6?: boolean;
   /** Serve at the apex of this zone (with `certificate`). */
   hostedZone?: IHostedZone;
   certificate?: ICertificate;
@@ -110,8 +108,6 @@ export class Webapp extends Construct {
       signPayloadHandler: props.signPayloadHandler,
       webAclId: props.webAclId,
       geoRestriction: props.geoRestriction,
-      functionAssociations: props.functionAssociations,
-      enableIpv6: props.enableIpv6,
       hostedZone: props.hostedZone,
       certificate: props.certificate,
     });
