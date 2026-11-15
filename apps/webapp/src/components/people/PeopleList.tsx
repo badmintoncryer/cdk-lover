@@ -66,7 +66,7 @@ function SocialLink({ href, label, children }: { href: string; label: string; ch
 export function OrganizerCard({ lang }: { lang: Lang }) {
   return (
     <div className="rounded-xl border bg-card p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)] sm:p-6">
-      <div className="flex items-center gap-4 sm:gap-5">
+      <div className="flex items-start gap-4 sm:items-center sm:gap-5">
         {/* Plain img: next/image would need remotePatterns for one avatar. */}
         {/* oxlint-disable-next-line nextjs/no-img-element */}
         <img
@@ -150,7 +150,7 @@ export function PeopleList({ lang, people }: { lang: Lang; people: ProfileView[]
           <p className="mt-3">{t(lang, 'noProfiles')}</p>
         </div>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {shown.map((p) => (
             <li
               key={p.id}

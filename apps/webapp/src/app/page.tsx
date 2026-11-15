@@ -30,7 +30,7 @@ export default async function Home() {
             {t(lang, 'noSessions')}
           </p>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {sorted.map((s) => {
               const open = s.status === 'open';
               return (
@@ -51,7 +51,7 @@ export default async function Home() {
                         <span className={cn('size-1.5 rounded-full', open ? 'bg-emerald-500' : 'bg-slate-400')} />
                         {open ? t(lang, 'open') : t(lang, 'closedShort')}
                       </span>
-                      <div className="mt-2 truncate font-medium">{s.title}</div>
+                      <div className="mt-2 line-clamp-2 wrap-anywhere font-medium">{s.title}</div>
                     </div>
                     <ArrowRight className="size-5 shrink-0 text-muted-foreground transition-[color,transform] group-hover:translate-x-0.5 group-hover:text-foreground" />
                   </Link>
