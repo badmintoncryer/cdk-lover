@@ -11,6 +11,7 @@ import { summarize } from '@/lib/ai';
 import { passphraseHash } from '@/lib/crypto';
 import { getSession, listOpinions } from '@/lib/data';
 import { notifySession } from '@/lib/events';
+import { isPhase, PHASE_INFO, PHASES, type Phase } from '@/lib/phases';
 import { getSigningKey } from '@/lib/secrets';
 import { coreError } from './errors';
 
@@ -54,6 +55,32 @@ export async function upsertSession(input: z.infer<typeof sessionInput>): Promis
   }
   await refreshAdmin(id);
   return { created: !existing };
+}
+
+/**
+ * Shows a part on every board (or clears the banner with null). `minutes` (the part's planned length
+ * when omitted) only sets the guide time left; nothing advances until the organizer says so.
+ */
+export async function setPhase(sessionId: string, phase: Phase | null, minutes?: number) {
+  if (phase !== null && !isPhase(phase)) throw coreError('unknown phase');
+  const session = await getSession(sessionId);
+  if (!session) throw coreError('session not found');
+  const mins = phase === null ? 0 : Math.max(0, Math.min(120, minutes ?? PHASE_INFO[phase].minutes));
+  await db
+    .update(sessions)
+    .set({ phase, phaseEndsAt: mins > 0 ? new Date(Date.now() + mins * 60_000) : null })
+    .where(eq(sessions.id, sessionId));
+  await refreshAdmin(sessionId);
+}
+
+/** Moves to the next (1) or previous (-1) part; Next with nothing on starts the meetup. */
+export async function stepPhase(sessionId: string, step: 1 | -1) {
+  const session = await getSession(sessionId);
+  if (!session) throw coreError('session not found');
+  const index = isPhase(session.phase) ? PHASES.indexOf(session.phase) + step : step === 1 ? 0 : -1;
+  const target = PHASES[index];
+  if (!target) throw coreError(step === 1 ? 'already at the last part' : 'already at the first part');
+  await setPhase(sessionId, target);
 }
 
 export async function deleteAnyOpinion(sessionId: string, opinionId: string) {

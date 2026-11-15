@@ -34,10 +34,14 @@ export function JoinPanel({ lang, sessionId }: { lang: Lang; sessionId: string }
     <Card className="overflow-hidden">
       <form onSubmit={submit} className="space-y-4 p-4 sm:p-5">
         <div>
-          <div>
-            <h2 className="font-semibold leading-tight">{t(lang, 'joinTitle')}</h2>
-            <p className="mt-0.5 text-sm text-muted-foreground">{t(lang, 'joinHint')}</p>
-          </div>
+          <h2 className="font-semibold leading-tight">{t(lang, 'joinTitle')}</h2>
+          {/* Walk-up attendees land here first, so this doubles as the session's intro slide. */}
+          <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm">
+            <li>{t(lang, 'joinIntro1')}</li>
+            <li>{t(lang, 'joinIntro2')}</li>
+            <li>{t(lang, 'joinIntro3')}</li>
+          </ol>
+          <p className="mt-2 text-sm text-muted-foreground">{t(lang, 'joinHint')}</p>
         </div>
         <PublicNotice>{t(lang, 'publicJoin')}</PublicNotice>
 

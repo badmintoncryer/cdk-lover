@@ -26,6 +26,8 @@ const participant: Caller = {
       summaryJa: null,
       summaryCount: 0,
       translateCount: null,
+      phase: null,
+      phaseEndsAt: null,
       summarizedAt: null,
       createdAt: new Date(0),
     },
@@ -49,6 +51,7 @@ describe('createMcpServer', () => {
       expect.arrayContaining([
         'admin_list_sessions',
         'admin_upsert_session',
+        'admin_set_phase',
         'admin_delete_opinion',
         'admin_run_summary',
         'admin_export',

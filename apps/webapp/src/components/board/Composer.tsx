@@ -15,9 +15,23 @@ import { CATEGORY_SELECTED, CategoryDot } from './categories';
 
 const MAX = 400;
 
-export function Composer({ lang, sessionId }: { lang: Lang; sessionId: string }) {
+export function Composer({
+  lang,
+  sessionId,
+  phaseCategory,
+}: {
+  lang: Lang;
+  sessionId: string;
+  /** The current phase's category; picked again whenever the organizer switches phase. */
+  phaseCategory?: Category;
+}) {
   const router = useRouter();
-  const [category, setCategory] = useState<Category>('good');
+  const [category, setCategory] = useState<Category>(phaseCategory ?? 'good');
+  const [seenPhaseCategory, setSeenPhaseCategory] = useState(phaseCategory);
+  if (phaseCategory !== seenPhaseCategory) {
+    setSeenPhaseCategory(phaseCategory);
+    if (phaseCategory) setCategory(phaseCategory);
+  }
   const [body, setBody] = useState('');
   const [pending, start] = useTransition();
   const textarea = useRef<HTMLTextAreaElement>(null);

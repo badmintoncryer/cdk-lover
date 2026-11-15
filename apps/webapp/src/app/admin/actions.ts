@@ -6,6 +6,7 @@ import { z } from 'zod';
 import * as core from '@/lib/core/admin';
 import { adminToken, safeEqual } from '@/lib/crypto';
 import { clearAdminCookie, isAdmin, setAdminCookie } from '@/lib/identity';
+import type { Phase } from '@/lib/phases';
 import { getAdminPassword, getSigningKey } from '@/lib/secrets';
 
 export type AdminResult = { ok: true; message?: string } | { ok: false; error: string };
@@ -42,6 +43,14 @@ export async function adminLogout() {
 
 export async function upsertSession(input: z.infer<typeof core.sessionInput>): Promise<AdminResult> {
   return asAdmin(() => core.upsertSession(input));
+}
+
+export async function setPhase(sessionId: string, phase: Phase | null): Promise<AdminResult> {
+  return asAdmin(() => core.setPhase(sessionId, phase));
+}
+
+export async function stepPhase(sessionId: string, step: 1 | -1): Promise<AdminResult> {
+  return asAdmin(() => core.stepPhase(sessionId, step));
 }
 
 export async function adminDeleteOpinion(sessionId: string, opinionId: string): Promise<AdminResult> {

@@ -13,6 +13,7 @@ import { CoreError } from '@/lib/core/errors';
 import * as participant from '@/lib/core/participant';
 import { getSession, listOpinions, listProfiles, listSessions, type OpinionView } from '@/lib/data';
 import { CATEGORIES } from '@/lib/i18n';
+import { PHASE_INFO, PHASES, phaseState } from '@/lib/phases';
 import { toMarkdown } from '@/lib/report';
 
 export type Caller = { kind: 'participant'; participant: participant.Participant } | { kind: 'admin' };
@@ -96,6 +97,7 @@ function registerParticipantTools(server: McpServer, p: participant.Participant)
           myPosts: mine.filter((o) => o.mine).length,
           maxPostsPerPerson: participant.MAX_OPINIONS_PER_PERSON,
           summary: session.summaryEn ? { en: session.summaryEn, ja: session.summaryJa } : null,
+          now: phaseNow(session),
         };
       }),
   );
@@ -325,6 +327,24 @@ function registerAdminTools(server: McpServer) {
   );
 
   server.registerTool(
+    'admin_set_phase',
+    {
+      title: 'Switch the meetup phase',
+      description: `Shows a part of the meetup (its question, category and a guide time left) at the top of every board and the screen. Parts never advance on their own; call again to move on. Parts in order: ${PHASES.join(', ')}. Pass "none" to hide the banner. minutes overrides the part's planned length (the guide only).`,
+      inputSchema: {
+        ...sessionArg,
+        phase: z.enum([...PHASES, 'none']),
+        minutes: z.number().int().min(0).max(120).optional(),
+      },
+      annotations: WRITE,
+    },
+    (args) =>
+      handle('admin_set_phase', () =>
+        admin.setPhase(args.session_id, args.phase === 'none' ? null : args.phase, args.minutes),
+      ),
+  );
+
+  server.registerTool(
     'admin_delete_opinion',
     {
       title: 'Delete any post',
@@ -411,4 +431,18 @@ export function createMcpServer(caller: Caller): McpServer {
   if (caller.kind === 'admin') registerAdminTools(server);
   else registerParticipantTools(server, caller.participant);
   return server;
+}
+
+/** The organizer's current phase in plain words, so an assistant can tell the attendee what to do now. */
+function phaseNow(session: { phase: string | null; phaseEndsAt: Date | null }) {
+  const state = phaseState(session);
+  if (!state) return null;
+  const info = PHASE_INFO[state.phase];
+  return {
+    phase: state.phase,
+    title: info.title.en,
+    prompt: info.prompt.en,
+    category: info.category ?? null,
+    endsAt: state.endsAt,
+  };
 }
