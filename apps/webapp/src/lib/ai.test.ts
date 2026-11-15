@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { extractJson, fromModel, guessLang, splitSummary } from './ai';
+import { extractJson, fromModel, guessLang, isUntranslated, splitSummary } from './ai';
 
 describe('ai helpers', () => {
   test('guessLang detects Japanese', () => {
@@ -36,5 +36,16 @@ describe('fromModel', () => {
   test('keeps other languages the model detected', () => {
     const r = fromModel('CDK es genial', { sourceLang: 'es', en: 'CDK is great', ja: 'CDK は最高' }, 'en');
     expect(r).toEqual({ sourceLang: 'es', en: 'CDK is great', ja: 'CDK は最高' });
+  });
+});
+
+describe('isUntranslated', () => {
+  test('flags a post kept as written in both languages', () => {
+    const body = 'MCPからのテスト投稿です（編集済み）';
+    expect(isUntranslated({ body, bodyEn: body, bodyJa: body })).toBe(true);
+  });
+
+  test('passes a translated post', () => {
+    expect(isUntranslated({ body: 'L2 が便利', bodyEn: 'L2 is handy', bodyJa: 'L2 が便利' })).toBe(false);
   });
 });

@@ -45,6 +45,15 @@ export function untranslated(text: string): Translation {
 }
 
 /**
+ * True when a saved post holds its original text in both languages: the model failed, the budget
+ * ran out, or (before the source-language fix) a Japanese note starting with "MCP" was taken for
+ * English. Such a post is translated again on its next edit even if the text did not change.
+ */
+export function isUntranslated(o: { body: string; bodyEn: string; bodyJa: string }): boolean {
+  return o.bodyEn === o.body && o.bodyJa === o.body;
+}
+
+/**
  * Builds the translation from the model's reply. Between Japanese and English the script decides
  * the source language, not the model: short notes that start with a product name ("MCP", "CDK")
  * were labelled "en" and then shown untranslated in both columns.
