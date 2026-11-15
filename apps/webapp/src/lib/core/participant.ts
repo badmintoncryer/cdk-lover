@@ -8,7 +8,7 @@ import { opinions, profiles, votes } from '@repo/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { translate, untranslated } from '@/lib/ai';
+import { isUntranslated, translate, untranslated } from '@/lib/ai';
 import { purposeKey } from '@/lib/crypto';
 import {
   countOpinionsBy,
@@ -114,8 +114,9 @@ export async function updateOpinion(p: Participant, input: z.infer<typeof opinio
   const where = and(eq(opinions.id, opinionId), eq(opinions.sessionId, sessionId), eq(opinions.authorKey, p.authorKey));
   const existing = await db.query.opinions.findFirst({ where });
   if (!existing) throw coreError('not found');
+  // Reuse the saved translation only when there is one; an untranslated post gets another try.
   const tr =
-    existing.body === body
+    existing.body === body && !isUntranslated(existing)
       ? { sourceLang: existing.sourceLang, en: existing.bodyEn, ja: existing.bodyJa }
       : await translateWithinBudget(sessionId, body);
   await db
