@@ -159,3 +159,10 @@
     transform: none;
   }
 }
+
+/* The projector view is dark to the edges: a phone held sideways shows the page background beside
+   the notch and in the overscroll, which was the light app background. */
+html:has([data-screen]),
+html:has([data-screen]) body {
+  background: #0f1013;
+}
