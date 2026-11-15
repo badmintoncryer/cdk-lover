@@ -131,6 +131,9 @@
   body {
     @apply bg-background text-foreground;
     -webkit-tap-highlight-color: transparent;
+    /* Nothing should ever be wider than a phone; if something slips through, never let it widen the
+       page (pinch-zooming out then showed a blank strip beside the header and footer). */
+    overflow-x: clip;
   }
   button:not(:disabled),
   [role='button']:not(:disabled) {

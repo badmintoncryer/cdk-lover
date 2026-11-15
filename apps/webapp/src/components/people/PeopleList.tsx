@@ -173,7 +173,7 @@ export function PeopleList({ lang, people }: { lang: Lang; people: ProfileView[]
                   <span className="truncate font-medium">{p.name}</span>
                   {p.mine && <span className="text-xs text-muted-foreground">{t(lang, 'me')}</span>}
                 </div>
-                {p.intro && <p className="mt-0.5 break-words text-sm text-muted-foreground">{p.intro}</p>}
+                {p.intro && <p className="mt-0.5 wrap-anywhere text-sm text-muted-foreground">{p.intro}</p>}
                 {(p.linkedinUrl || p.xUrl || p.githubUrl) && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {p.linkedinUrl && (
