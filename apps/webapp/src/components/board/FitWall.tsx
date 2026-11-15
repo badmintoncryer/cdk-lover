@@ -24,14 +24,21 @@ export function FitWall({ children, className }: { children: ReactNode; classNam
     const fit = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const max = Math.max(16, Math.min(h * 0.05, w * 0.026));
+      // Capped near the old fixed card text (~24px at 1080p): a sparse board blown up to fill the
+      // screen read as shouting, so few notes leave room rather than grow.
+      const max = Math.max(14, Math.min(h * 0.022, w * 0.0125));
       // A phone is read at arm's length; a projector from the back of the room.
-      const min = Math.max(12, Math.min(h * 0.018, max));
+      const min = Math.max(12, Math.min(h * 0.016, max));
       const overflows = (px: number) => {
         el.style.fontSize = `${px}px`;
         return el.scrollWidth > el.clientWidth + 1;
       };
-      if (!overflows(max)) return edge();
+      el.style.columnFill = '';
+      if (!overflows(max)) {
+        // With room to spare, spread the notes over every column instead of stacking them on the left.
+        el.style.columnFill = 'balance';
+        return edge();
+      }
       let lo = min;
       let hi = max;
       for (let i = 0; i < 9; i++) {
