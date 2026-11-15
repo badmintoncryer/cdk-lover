@@ -11,7 +11,7 @@ export const ORGANIZER = {
     en: 'Host of CDK Lovers',
   },
   /** Second line under the intro; titles, so the same in both languages. */
-  credentials: 'AWS Hero & AWS CDK Top Contributor & Trusted Community Reviewer',
+  credentials: 'AWS DevTools Hero & AWS CDK Top Contributor & Trusted Community Reviewer',
   linkedinUrl: 'https://www.linkedin.com/in/cryershinozukakazuho/' as string | undefined,
   xUrl: 'https://x.com/nixieminton' as string | undefined,
 };
