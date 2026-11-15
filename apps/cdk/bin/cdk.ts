@@ -25,11 +25,6 @@ const props = {
   /** Monthly budget in USD for the alert. */
   budgetUsd: Number(app.node.tryGetContext('budgetUsd') ?? 20),
   /**
-   * Pre-event IP allowlist. On unless `-c ipRestriction=false`. Manage the list with
-   * `scripts/allow-ip.sh` (blocked for everyone until it is first run).
-   */
-  ipRestriction: String(app.node.tryGetContext('ipRestriction') ?? 'true') !== 'false',
-  /**
    * Custom domain (set in cdk.json). The hosted zone must be named exactly `domainName` and live
    * in the deploy account; delegate it from the parent zone with NS records. `-c domainName=`
    * (empty) deploys without it.
@@ -60,7 +55,6 @@ new MainStack(app, 'CdkLoverStack', {
   summaryModelId: props.summaryModelId,
   budgetEmail: props.budgetEmail,
   budgetUsd: props.budgetUsd,
-  ipRestriction: props.ipRestriction,
   customDomain,
   certificate: virginia.certificate,
 });
