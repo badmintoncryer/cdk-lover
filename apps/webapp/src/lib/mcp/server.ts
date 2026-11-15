@@ -208,7 +208,7 @@ function registerParticipantTools(server: McpServer, p: participant.Participant)
     {
       title: 'Save your profile',
       description:
-        'Creates or updates your profile, visible to every attendee and deleted a few days after the event. Omitted fields keep their current value; pass an empty string to clear one. Links accept a URL or a handle.',
+        'Creates or updates your profile, visible to every attendee. Omitted fields keep their current value; pass an empty string to clear one. Links accept a URL or a handle.',
       inputSchema: {
         name: z.string().max(60).optional().describe('Required when creating the profile'),
         intro: z.string().max(160).optional().describe('One line about yourself'),
