@@ -58,7 +58,7 @@ export function OpinionCard({
   return (
     <article
       className={cn(
-        'flex flex-col gap-2 rounded-xl border border-t-4 p-4 pb-3 shadow-[0_1px_2px_rgb(0_0_0/0.05)] transition-opacity',
+        'flex min-w-0 flex-col gap-2 rounded-xl border border-t-4 p-4 pb-3 shadow-[0_1px_2px_rgb(0_0_0/0.05)] transition-opacity',
         CATEGORY_STYLE[o.category],
         o.mine && 'ring-1 ring-slate-900/15',
         pending && 'opacity-60',
@@ -117,7 +117,7 @@ export function OpinionCard({
           </div>
         </div>
       ) : (
-        <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed text-slate-900">{text}</p>
+        <p className="whitespace-pre-wrap wrap-anywhere text-[15px] leading-relaxed text-slate-900">{text}</p>
       )}
 
       <div className="mt-auto flex items-center gap-1 pt-1">

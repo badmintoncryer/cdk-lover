@@ -171,7 +171,7 @@ function Note({ o, lang }: { o: OpinionView; lang: Lang }) {
           {o.votes}
         </span>
       )}
-      <p className="leading-snug whitespace-pre-wrap break-words">
+      <p className="leading-snug whitespace-pre-wrap wrap-anywhere">
         {fresh && (
           <span className="mr-[0.4em] align-[0.1em] text-[0.65em] font-semibold text-brand-ink uppercase">
             {t(lang, 'fresh')}
