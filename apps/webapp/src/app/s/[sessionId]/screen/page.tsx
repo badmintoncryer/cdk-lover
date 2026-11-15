@@ -7,7 +7,7 @@ import { JoinQr } from '@/components/JoinQr';
 import { LiveRefresh } from '@/components/LiveRefresh';
 import { Markdown } from '@/components/Markdown';
 import { Logo } from '@/components/SiteHeader';
-import { FitWall } from '@/components/board/FitWall';
+import { LaneWall } from '@/components/board/LaneWall';
 import { CATEGORY_STYLE, CategoryDot } from '@/components/board/categories';
 import { getSession, listOpinions, type OpinionView } from '@/lib/data';
 import { CATEGORIES, categoryLabel, isLang, t, type Lang } from '@/lib/i18n';
@@ -28,7 +28,7 @@ const tab = (active: boolean) =>
 /**
  * Projector view for the room and the CDK team. Defaults to English.
  * Attendees also open it on their phones held sideways (`short:` variant), so the
- * header shrinks and the four categories become a swipeable row of two columns.
+ * header shrinks to one row and the four category lanes keep the height.
  */
 export default async function ScreenPage({
   params,
@@ -54,19 +54,19 @@ export default async function ScreenPage({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0f1013] text-slate-100 xl:h-screen short:h-dvh short:min-h-0">
+    <div data-screen className="flex h-dvh flex-col bg-[#0f1013] text-slate-100">
       <LiveRefresh sessionId={sessionId} pollMs={8_000} />
       {/* Sideways phones get one short row for header and controls so the notes keep the height. */}
       <div className="contents short:flex short:items-center short:gap-3 short:px-3 short:py-1.5">
         <header className="flex flex-wrap items-center gap-x-8 gap-y-3 px-6 pt-5 pb-3 short:shrink-0 short:flex-nowrap short:gap-x-3 short:p-0">
           <div className="short:flex short:items-baseline short:gap-2">
-            <h1 className="text-4xl leading-none short:text-base">
+            <h1 className="text-4xl leading-none max-md:text-2xl short:text-base">
               <Logo />
             </h1>
-            <p className="mt-2 text-lg text-slate-400 short:mt-0 short:max-w-[10rem] short:truncate short:text-xs">
+            <p className="mt-2 text-lg text-slate-400 max-md:mt-1 max-md:text-sm short:mt-0 short:max-w-[10rem] short:truncate short:text-xs">
               {session.title}
             </p>
-            <Credit className="mt-1 text-sm text-slate-500 short:hidden" />
+            <Credit className="mt-1 text-sm text-slate-500 max-md:hidden short:hidden" />
           </div>
           <dl className="flex gap-6 short:gap-3">
             <Stat label={t(lang, 'statNotes')} value={opinions.length} />
@@ -128,26 +128,27 @@ export default async function ScreenPage({
         </main>
       ) : (
         <main className="flex min-h-0 flex-1 flex-col px-6 pb-4 short:px-3 short:pb-2">
-          <FitWall className="min-h-0 flex-1">
-            {CATEGORIES.map((c) => {
+          <LaneWall
+            className="min-h-0 flex-1"
+            lanes={CATEGORIES.map((c) => {
               const items = opinions.filter((o) => o.category === c).sort((a, b) => b.votes - a.votes);
-              const [first, ...rest] = items.map((o) => <Note key={o.id} o={o} lang={lang} />);
-              return (
-                <section key={c} className="contents">
-                  {/* The heading travels with its first note so it never ends a column alone. */}
-                  <div className="break-inside-avoid">
-                    <h2 className="flex items-center gap-[0.4em] pt-[0.1em] pb-[0.4em] text-[0.85em] leading-tight font-medium text-slate-300">
-                      <CategoryDot category={c} className="size-[0.6em]" />
-                      {categoryLabel(lang, c)}
-                      <span className="font-mono text-slate-500 tabular-nums">{items.length}</span>
-                    </h2>
-                    {first ?? <p className="mb-[0.6em] text-[0.8em] text-slate-600">—</p>}
-                  </div>
-                  {rest}
-                </section>
-              );
+              return {
+                key: c,
+                header: (
+                  <h2 className="flex shrink-0 items-center gap-[0.4em] pt-[0.1em] pb-[0.4em] text-[0.85em] leading-tight font-medium text-slate-300">
+                    <CategoryDot category={c} className="size-[0.6em]" />
+                    {categoryLabel(lang, c)}
+                    <span className="font-mono text-slate-500 tabular-nums">{items.length}</span>
+                  </h2>
+                ),
+                notes: items.length ? (
+                  items.map((o) => <Note key={o.id} o={o} lang={lang} />)
+                ) : (
+                  <p className="text-[0.8em] text-slate-600">—</p>
+                ),
+              };
             })}
-          </FitWall>
+          />
         </main>
       )}
     </div>
@@ -159,7 +160,7 @@ function Note({ o, lang }: { o: OpinionView; lang: Lang }) {
   return (
     <article
       className={cn(
-        'mb-[0.5em] break-inside-avoid rounded-[0.45em] border border-t-[0.2em] px-[0.6em] py-[0.4em] text-slate-900',
+        'mb-[0.5em] rounded-[0.45em] border border-t-[0.2em] px-[0.6em] py-[0.4em] text-slate-900',
         CATEGORY_STYLE[o.category],
       )}
       style={fresh ? { animation: 'note-in 400ms cubic-bezier(0.22, 1, 0.36, 1)' } : undefined}
@@ -187,7 +188,7 @@ function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex flex-col-reverse short:flex-row-reverse short:items-baseline short:gap-1">
       <dt className="mt-1 text-sm text-slate-400 short:mt-0 short:text-xs">{label}</dt>
-      <dd className="text-4xl font-medium tabular-nums leading-none short:text-sm">{value}</dd>
+      <dd className="text-4xl font-medium tabular-nums leading-none max-md:text-2xl short:text-sm">{value}</dd>
     </div>
   );
 }
