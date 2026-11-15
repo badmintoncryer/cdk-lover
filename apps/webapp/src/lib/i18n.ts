@@ -55,8 +55,8 @@ const dict = {
   },
   profileTitle: { ja: 'あなたのプロフィール', en: 'Your profile' },
   profileHint: {
-    ja: '入力した内容はすべて参加者全員に公開されます（イベント後数日で削除）。名前以外は任意です。',
-    en: 'Everything you enter here is public to all attendees (deleted a few days after the event). Everything except your name is optional.',
+    ja: '入力した内容はすべて参加者全員に公開されます。名前以外は任意です。',
+    en: 'Everything you enter here is public to all attendees. Everything except your name is optional.',
   },
   name: { ja: '名前', en: 'Name' },
   intro: { ja: 'ひとこと', en: 'One-line intro' },
