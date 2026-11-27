@@ -35,12 +35,15 @@ export function Board({
   canPost,
   canVote,
   opinions,
+  firstLove = false,
 }: {
   lang: Lang;
   sessionId: string;
   canPost: boolean;
   canVote: boolean;
   opinions: OpinionView[];
+  /** The attendee has not posted a "Love" note yet: the composer frames itself as the warm-up step. */
+  firstLove?: boolean;
 }) {
   const [category, setCategory] = useState<string>('all');
   const [sort, setSort] = useState<'new' | 'top'>('new');
@@ -54,7 +57,7 @@ export function Board({
 
   return (
     <div className="space-y-4">
-      {canPost && <Composer lang={lang} sessionId={sessionId} />}
+      {canPost && <Composer lang={lang} sessionId={sessionId} firstLove={firstLove} />}
 
       <div className="space-y-2">
         <ChipRow label={t(lang, 'category')}>

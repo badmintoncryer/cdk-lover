@@ -136,3 +136,19 @@ export async function reserveTranslation(sessionId: string, max: number): Promis
     }
   }
 }
+
+export async function hasProfileBy(sessionId: string, ownerKey: string): Promise<boolean> {
+  const row = await db.query.profiles.findFirst({
+    where: and(eq(profiles.sessionId, sessionId), eq(profiles.ownerKey, ownerKey)),
+    columns: { id: true },
+  });
+  return !!row;
+}
+
+export async function hasOpinionBy(sessionId: string, authorKey: string, category: string): Promise<boolean> {
+  const row = await db.query.opinions.findFirst({
+    where: and(eq(opinions.sessionId, sessionId), eq(opinions.authorKey, authorKey), eq(opinions.category, category)),
+    columns: { id: true },
+  });
+  return !!row;
+}

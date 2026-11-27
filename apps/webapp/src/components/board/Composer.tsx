@@ -15,7 +15,7 @@ import { CATEGORY_SELECTED, CategoryDot } from './categories';
 
 const MAX = 400;
 
-export function Composer({ lang, sessionId }: { lang: Lang; sessionId: string }) {
+export function Composer({ lang, sessionId, firstLove }: { lang: Lang; sessionId: string; firstLove: boolean }) {
   const router = useRouter();
   const [category, setCategory] = useState<Category>('good');
   const [body, setBody] = useState('');
@@ -32,16 +32,17 @@ export function Composer({ lang, sessionId }: { lang: Lang; sessionId: string })
         return;
       }
       setBody('');
-      toast.success(t(lang, 'posted'));
+      toast.success(firstLove && category === 'good' ? t(lang, 'onbDoneToast') : t(lang, 'posted'));
       router.refresh();
       textarea.current?.focus();
     });
   };
 
   return (
-    <Card>
+    // scroll-mt clears the sticky header when the onboarding guide links here.
+    <Card id="composer" className={cn('scroll-mt-36', firstLove && 'ring-2 ring-slate-900/80')}>
       <form onSubmit={submit} className="space-y-3 p-4 sm:p-5">
-        <h2 className="font-semibold">{t(lang, 'newNote')}</h2>
+        <h2 className="font-semibold">{firstLove ? t(lang, 'onbNewNoteLove') : t(lang, 'newNote')}</h2>
 
         <fieldset className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <legend className="sr-only">{t(lang, 'category')}</legend>
@@ -68,7 +69,7 @@ export function Composer({ lang, sessionId }: { lang: Lang; sessionId: string })
           onChange={(e) => setBody(e.target.value)}
           maxLength={MAX}
           rows={3}
-          placeholder={t(lang, 'postPlaceholder')}
+          placeholder={firstLove && category === 'good' ? t(lang, 'onbLovePlaceholder') : t(lang, 'postPlaceholder')}
           enterKeyHint="send"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit(e);

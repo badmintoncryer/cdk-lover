@@ -115,6 +115,45 @@ const dict = {
   },
   copy: { ja: 'コピー', en: 'Copy' },
   copied: { ja: 'コピーしました', en: 'Copied' },
+  onbTitle: { ja: 'はじめに 3 ステップ', en: 'Get started in 3 steps' },
+  onbJoin: { ja: 'パスフレーズで参加', en: 'Join with the passphrase' },
+  onbProfile: { ja: 'プロフィールを登録', en: 'Add your profile' },
+  onbLove: { ja: 'CDK の好きなところを 1 つ投稿', en: 'Post one thing you love about CDK' },
+  onbJoinHint: {
+    ja: '下のフォームに、会場で案内されたパスフレーズを入力してください。',
+    en: 'Enter the passphrase announced in the room in the form below.',
+  },
+  onbProfileHint: {
+    ja: 'ほかの参加者とつながれるよう、名前とひとことを登録しましょう。',
+    en: 'Add your name and a short intro so other attendees can find you.',
+  },
+  onbLoveHint: {
+    ja: 'ウォーミングアップに、CDK の好きなところを 1 つ書いてみましょう。',
+    en: 'As a warm-up, share one thing you love about CDK.',
+  },
+  onbGoProfile: { ja: 'プロフィールを登録する', en: 'Add my profile' },
+  onbGoLove: { ja: '好きなところを書く', en: 'Write what I love' },
+  onbDoneTitle: { ja: '準備完了！', en: "You're all set!" },
+  onbDoneHint: {
+    ja: 'セッションの開始までお待ちください。それまで、ほかの人の投稿に +1 したり、参加者一覧を眺めたりしてみてください。',
+    en: 'Sit tight until the session starts. Meanwhile, +1 the posts you agree with or browse the people here.',
+  },
+  onbDismiss: { ja: '閉じる', en: 'Dismiss' },
+  onbStep: { ja: 'ステップ', en: 'Step' },
+  onbNewNoteLove: { ja: 'CDK の好きなところを 1 つ', en: 'One thing you love about CDK' },
+  onbLovePlaceholder: {
+    ja: '例：TypeScript でインフラを書けるのが最高（日本語でも英語でも OK、自動翻訳されます）',
+    en: 'e.g. Writing infrastructure in TypeScript is the best (Japanese or English, auto-translated)',
+  },
+  joinedNext: { ja: '参加しました。次はプロフィールを登録しましょう', en: "You're in! Next, add your profile" },
+  savedNext: {
+    ja: '保存しました。次は CDK の好きなところを 1 つ投稿しましょう',
+    en: 'Saved! Next, post one thing you love about CDK',
+  },
+  onbDoneToast: {
+    ja: '準備完了！セッションの開始をお待ちください',
+    en: "You're all set! Sit tight until the session starts",
+  },
   error: { ja: 'エラーが発生しました', en: 'Something went wrong' },
 } as const;
 
