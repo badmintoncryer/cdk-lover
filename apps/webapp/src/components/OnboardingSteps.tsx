@@ -19,6 +19,17 @@ function readDismissed(sessionId: string): boolean {
   }
 }
 
+/**
+ * A plain `#composer` link does nothing once the URL already ends in that hash (the profile step
+ * redirects there), so scroll by hand. Focusing inside the tap is what lets phones open the keyboard.
+ */
+function goToComposer() {
+  const el = document.getElementById('composer');
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.querySelector('textarea')?.focus({ preventScroll: true });
+}
+
 // Only this tab writes the flag, and it also flips local state, so there is nothing to subscribe to.
 const subscribe = () => () => {};
 
@@ -92,7 +103,7 @@ export function OnboardingSteps({
           }
         : {
             hint: t(lang, 'onbLoveHint'),
-            cta: { href: page === 'board' ? '#composer' : `${base}#composer`, label: t(lang, 'onbGoLove') },
+            cta: { href: `${base}#composer`, label: t(lang, 'onbGoLove') },
           };
 
   return (
@@ -134,13 +145,20 @@ export function OnboardingSteps({
       </ol>
       <div className="mt-3 flex flex-col gap-2 border-t pt-3 sm:flex-row sm:items-center">
         <p className="flex-1 text-sm text-muted-foreground">{next.hint}</p>
-        {next.cta && (
-          <Button asChild variant="dark" className="w-full sm:w-auto">
-            <Link href={next.cta.href}>
-              {next.cta.label}
-              <ArrowRight />
-            </Link>
+        {current === 2 && page === 'board' ? (
+          <Button type="button" variant="dark" className="w-full sm:w-auto" onClick={goToComposer}>
+            {t(lang, 'onbGoLove')}
+            <ArrowRight />
           </Button>
+        ) : (
+          next.cta && (
+            <Button asChild variant="dark" className="w-full sm:w-auto">
+              <Link href={next.cta.href}>
+                {next.cta.label}
+                <ArrowRight />
+              </Link>
+            </Button>
+          )
         )}
       </div>
     </Card>
