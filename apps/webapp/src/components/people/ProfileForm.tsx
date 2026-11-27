@@ -13,7 +13,18 @@ import type { ProfileView } from '@/lib/data';
 import { t, type Lang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
-export function ProfileForm({ lang, sessionId, profile }: { lang: Lang; sessionId: string; profile?: ProfileView }) {
+export function ProfileForm({
+  lang,
+  sessionId,
+  profile,
+  nextToLove = false,
+}: {
+  lang: Lang;
+  sessionId: string;
+  profile?: ProfileView;
+  /** After the first save, send the attendee on to the composer (the next onboarding step). */
+  nextToLove?: boolean;
+}) {
   const router = useRouter();
   const [pending, start] = useTransition();
   // Once saved, fold the form so the directory is what a phone shows first.
@@ -36,8 +47,13 @@ export function ProfileForm({ lang, sessionId, profile }: { lang: Lang; sessionI
         toast.error(res.error === 'invalid url' ? t(lang, 'invalidUrl') : t(lang, 'error'));
         return;
       }
-      toast.success(t(lang, 'saved'));
       setOpen(false);
+      if (!profile && nextToLove) {
+        toast.success(t(lang, 'savedNext'));
+        router.push(`/s/${sessionId}#composer`);
+        return;
+      }
+      toast.success(t(lang, 'saved'));
       router.refresh();
     });
   };

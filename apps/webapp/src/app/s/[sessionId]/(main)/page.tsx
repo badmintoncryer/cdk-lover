@@ -3,22 +3,25 @@ import { notFound } from 'next/navigation';
 import { Board } from '@/components/board/Board';
 import { JoinPanel } from '@/components/board/JoinPanel';
 import { McpPanel } from '@/components/board/McpPanel';
+import { OnboardingSteps } from '@/components/OnboardingSteps';
 import { getSession, listOpinions } from '@/lib/data';
-import { getLang, isJoined, keyFor } from '@/lib/identity';
+import { getLang, keyFor } from '@/lib/identity';
 import { t } from '@/lib/i18n';
+import { getOnboarding } from '@/lib/onboarding';
 
 export default async function BoardPage({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await params;
   const session = await getSession(sessionId);
   if (!session) notFound();
-  const [lang, joined, authorKey, voterKey] = await Promise.all([
+  const [lang, onboarding, authorKey, voterKey] = await Promise.all([
     getLang(),
-    isJoined(sessionId, session.passphraseHash),
+    getOnboarding(session),
     keyFor('opinion'),
     keyFor('vote'),
   ]);
   const opinions = await listOpinions(sessionId, { authorKey, voterKey });
   const open = session.status === 'open';
+  const { joined } = onboarding;
 
   return (
     <div className="space-y-5">
@@ -28,8 +31,16 @@ export default async function BoardPage({ params }: { params: Promise<{ sessionI
           {t(lang, 'closed')}
         </p>
       )}
-      {open && !joined && <JoinPanel lang={lang} sessionId={sessionId} />}
-      <Board lang={lang} sessionId={sessionId} canPost={open && joined} canVote={open} opinions={opinions} />
+      {open && <OnboardingSteps lang={lang} sessionId={sessionId} state={onboarding} page="board" />}
+      {open && !joined && <JoinPanel lang={lang} sessionId={sessionId} hasProfile={onboarding.hasProfile} />}
+      <Board
+        lang={lang}
+        sessionId={sessionId}
+        canPost={open && joined}
+        canVote={open}
+        opinions={opinions}
+        firstLove={open && joined && !onboarding.hasLove}
+      />
       {open && joined && <McpPanel lang={lang} sessionId={sessionId} />}
     </div>
   );

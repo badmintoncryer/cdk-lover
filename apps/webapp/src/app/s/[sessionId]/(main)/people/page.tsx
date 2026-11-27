@@ -2,30 +2,37 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { OrganizerCard, PeopleList } from '@/components/people/PeopleList';
 import { ProfileForm } from '@/components/people/ProfileForm';
+import { OnboardingSteps } from '@/components/OnboardingSteps';
 import { getSession, listProfiles } from '@/lib/data';
-import { getLang, isJoined, keyFor } from '@/lib/identity';
+import { getLang, keyFor } from '@/lib/identity';
 import { t } from '@/lib/i18n';
+import { getOnboarding } from '@/lib/onboarding';
 
 export default async function PeoplePage({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await params;
   const session = await getSession(sessionId);
   if (!session) notFound();
-  const [lang, joined, ownerKey] = await Promise.all([
-    getLang(),
-    isJoined(sessionId, session.passphraseHash),
-    keyFor('profile'),
-  ]);
+  const [lang, onboarding, ownerKey] = await Promise.all([getLang(), getOnboarding(session), keyFor('profile')]);
   const people = await listProfiles(sessionId, ownerKey);
   const mine = people.find((p) => p.mine);
+  const open = session.status === 'open';
+  const { joined } = onboarding;
 
   return (
     <div className="space-y-5">
+      {open && <OnboardingSteps lang={lang} sessionId={sessionId} state={onboarding} page="people" />}
       <OrganizerCard lang={lang} />
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
         <section className="lg:sticky lg:top-20">
           {joined ? (
             // Keyed so the form resets after the profile is saved or deleted elsewhere.
-            <ProfileForm key={mine?.id ?? 'new'} lang={lang} sessionId={sessionId} profile={mine} />
+            <ProfileForm
+              key={mine?.id ?? 'new'}
+              lang={lang}
+              sessionId={sessionId}
+              profile={mine}
+              nextToLove={open && !onboarding.hasLove}
+            />
           ) : (
             <Link
               href={`/s/${sessionId}`}

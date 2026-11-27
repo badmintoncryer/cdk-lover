@@ -12,7 +12,7 @@ import { PublicNotice } from '@/components/PublicNotice';
 import { t, type Lang } from '@/lib/i18n';
 
 /** Joining only needs the passphrase: people move between tables on the day, so there is no group to pick. */
-export function JoinPanel({ lang, sessionId }: { lang: Lang; sessionId: string }) {
+export function JoinPanel({ lang, sessionId, hasProfile }: { lang: Lang; sessionId: string; hasProfile: boolean }) {
   const router = useRouter();
   const [passphrase, setPassphrase] = useState('');
   const [pending, start] = useTransition();
@@ -23,6 +23,12 @@ export function JoinPanel({ lang, sessionId }: { lang: Lang; sessionId: string }
       const res = await joinSession({ sessionId, passphrase });
       if (!res.ok) {
         toast.error(res.error === 'wrong passphrase' ? t(lang, 'wrongPassphrase') : t(lang, 'error'));
+        return;
+      }
+      // First visit: go straight to the profile form, the next onboarding step.
+      if (!hasProfile) {
+        toast.success(t(lang, 'joinedNext'));
+        router.push(`/s/${sessionId}/people`);
         return;
       }
       toast.success(t(lang, 'joined'));
