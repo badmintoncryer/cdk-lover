@@ -13,14 +13,19 @@ export function LiveRefresh({ sessionId, pollMs = 10_000 }: { sessionId: string;
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Throttle, not debounce: a steady stream of +1s in the room would keep resetting a debounce and
-  // starve the board until the next poll. This refetches at most once per second during a burst,
-  // which also bounds the Lambda renders each open board causes.
+  // starve the board until the next poll. This refetches at most once per burst window, which also
+  // bounds the Lambda renders each open board causes. The random delay spreads the room's boards
+  // over the window: with a fixed delay every phone refetches in the same instant, and each request
+  // that finds no warm Lambda instance pays a cold start.
   const refresh = useCallback(() => {
     if (timer.current) return;
-    timer.current = setTimeout(() => {
-      timer.current = undefined;
-      router.refresh();
-    }, 1000);
+    timer.current = setTimeout(
+      () => {
+        timer.current = undefined;
+        router.refresh();
+      },
+      500 + Math.random() * 1500,
+    );
   }, [router]);
 
   useEventBus({ channelName: `public/session-${sessionId}`, onReceived: refresh });

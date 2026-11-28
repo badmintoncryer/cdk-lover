@@ -130,8 +130,14 @@ export async function reserveTranslation(sessionId: string, max: number): Promis
         .returning({ id: sessions.id });
       return rows.length > 0;
     } catch (e) {
-      // Concurrent posts update the same Session row; retry a few times with jitter.
-      if (!isConflict(e) || attempt >= 4) throw e;
+      if (!isConflict(e)) throw e;
+      // Concurrent posts update the same Session row. After the retries, spend the call without
+      // counting it rather than failing the post: the cap is a cost bound, a few over is harmless,
+      // and losing an attendee's note to a write conflict is not.
+      if (attempt >= 7) {
+        console.warn(JSON.stringify({ msg: 'translation counter conflict, not counted', sessionId }));
+        return true;
+      }
       await new Promise((r) => setTimeout(r, 20 + Math.random() * 80 * (attempt + 1)));
     }
   }
